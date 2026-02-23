@@ -1,0 +1,10 @@
+transformers
+datasets
+evaluate
+accelerate
+numpy
+pandas
+matplotlib
+tqdm
+pynvml
+psutil
