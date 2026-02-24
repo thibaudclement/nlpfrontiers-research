@@ -11,7 +11,7 @@ from .pareto import save_pareto_table, plot_energy_accuracy_pareto_frontier
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--baseline_model_directory", type = str, required = True)
-    parser.add_argument("--sequence_lengths", type = int, nargs = "+", default = [128, 96, 64, 32])
+    parser.add_argument("--sequence_lengths", type = int, nargs = "+", default = [128, 96, 64, 48, 32])
     parser.add_argument("--evaluation_batch_size", type = int, default = 64)
     parser.add_argument("--num_inference_batches", type = int, default = 200)
     parser.add_argument("--power_sample_interval_s", type = float, default = 0.05)
