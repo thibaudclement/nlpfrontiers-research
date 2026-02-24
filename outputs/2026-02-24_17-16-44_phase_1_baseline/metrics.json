@@ -1,0 +1,18 @@
+{
+    "best_model_directory": "runs/2026-02-24_17-16-44_phase_1_baseline/best_model",
+    "inference_benchmark_metrics": {
+        "accuracy": 0.930045871559633,
+        "average_latency_per_example_ms": 3.1838670412830528,
+        "energy_per_correct_j": 0.24894407987871553,
+        "energy_per_example_j": 0.2315294137404109,
+        "peak_gpu_memory_mb": 720.1142578125
+    },
+    "trainer_evaluation_metrics": {
+        "epoch": 2.0,
+        "eval_accuracy": 0.930045871559633,
+        "eval_loss": 0.2531120181083679,
+        "eval_runtime": 2.7531,
+        "eval_samples_per_second": 316.733,
+        "eval_steps_per_second": 5.085
+    }
+}

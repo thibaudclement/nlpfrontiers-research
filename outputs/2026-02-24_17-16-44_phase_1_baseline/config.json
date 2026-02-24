@@ -1,0 +1,17 @@
+{
+    "dataset_config": "sst2",
+    "dataset_name": "glue",
+    "evaluation_batch_size": 64,
+    "learning_rate": 3e-05,
+    "max_sequence_length": 128,
+    "model_name": "bert-base-uncased",
+    "num_inference_batches": 200,
+    "num_train_epochs": 2,
+    "power_sample_interval_s": 0.05,
+    "run_name": "phase_1_baseline",
+    "seed": 42,
+    "train_batch_size": 32,
+    "use_fp16": false,
+    "warmup_ratio": 0.06,
+    "weight_decay": 0.01
+}
