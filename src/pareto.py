@@ -82,7 +82,7 @@ def plot_energy_latency_pareto_frontier(pareto_csv_path: Path, run_directory: Pa
             f"{li}",
             (xi, yi),
             textcoords = "offset points",
-            xytext = (5, 5),
+            xytext = (2, 5),
             ha = "left",
             va = "bottom",
             fontsize = 9,
