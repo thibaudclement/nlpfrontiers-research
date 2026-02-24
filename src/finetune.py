@@ -38,7 +38,7 @@ def finetune_baseline(
     # Configure Hugging Face Trainer
     training_args = TrainingArguments(
         output_dir = str(run_directory / "checkpoints"),
-        evaluation_strategy = "epoch",
+        eval_strategy = "epoch",
         save_strategy = "epoch",
         learning_rate = learning_rate,
         per_device_train_batch_size = train_batch_size,
