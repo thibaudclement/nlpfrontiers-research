@@ -51,7 +51,7 @@ def benchmark_inference(
         torch.cuda.synchronize()
     
     # Start GPU power sampling
-    sampler = GPUPowerSampler(gpu_index = 0, sample_interval_s = power_sample_interval_s)
+    sampler = GPUPowerSampler(gpu_index = gpu_index, sample_interval_s = power_sample_interval_s)
     sampler.start()
 
     all_predictions = []
