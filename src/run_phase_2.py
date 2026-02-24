@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import Dict, List
 from .configs import create_run_directory, save_config, ExperimentConfig
-from .data import load_and_tokenized_sst2_validation
+from .data import load_and_tokenize_sst2_validation
 from .evaluate_inference import benchmark_inference
 from .pareto import save_pareto_table, plot_energy_accuracy_pareto_frontier
 
@@ -11,7 +11,7 @@ from .pareto import save_pareto_table, plot_energy_accuracy_pareto_frontier
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--baseline_model_directory", type = str, required = True)
-    parser.add_argument("--sequence_length", type = int, nargs = "+", default = [128, 96, 64, 32])
+    parser.add_argument("--sequence_lengths", type = int, nargs = "+", default = [128, 96, 64, 32])
     parser.add_argument("--evaluation_batch_size", type = int, default = 64)
     parser.add_argument("--num_inference_batches", type = int, default = 200)
     parser.add_argument("--power_sample_interval_s", type = float, default = 0.05)
@@ -27,7 +27,7 @@ def run_phase_2_sequence_length_sweep() -> None:
     run_directory = create_run_directory(base_directory = "runs", run_name = run_name)
 
     # Persist sweep configuration for reproducibility
-    sweep_confiuguration = {
+    sweep_configuration = {
         "run_name": run_name,
         "baseline_model_directory": args.baseline_model_directory,
         "sequence_lengths": args.sequence_lengths,
@@ -39,7 +39,7 @@ def run_phase_2_sequence_length_sweep() -> None:
         "model_architecture": "bert-base-uncased finetuned classifier"
     }
     with open(run_directory / "config.json", "w", encoding = "utf-8") as f:
-        json.dump(sweep_confiuguration, f, indent = 4, sort_keys = True)
+        json.dump(sweep_configuration, f, indent = 4, sort_keys = True)
 
     pareto_rows: List[Dict[str, object]] = []
 
@@ -73,11 +73,11 @@ def run_phase_2_sequence_length_sweep() -> None:
             "peak_gpu_memory_mb": inference_output.peak_gpu_memory_mb
         })
 
-        # Save Pareto table and plot frontier
-        pareto_csv_path = save_pareto_table(rows = pareto_rows, run_directory = run_directory)
-        _ = plot_energy_accuracy_pareto_frontier(pareto_csv_path, run_directory)
+    # Save Pareto table and plot frontier
+    pareto_csv_path = save_pareto_table(rows = pareto_rows, run_directory = run_directory)
+    _ = plot_energy_accuracy_pareto_frontier(pareto_csv_path, run_directory)
 
-        print(f"Phase 2 (max sequence length) complete. Results saved to {run_directory}")
+    print(f"Phase 2 (max sequence length) complete. Results saved to {run_directory}")
 
 if __name__ == "__main__":
     run_phase_2_sequence_length_sweep()

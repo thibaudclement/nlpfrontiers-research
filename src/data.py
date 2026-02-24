@@ -28,7 +28,7 @@ def load_and_tokenize_sst2(model_name: str, max_sequence_length: int) -> Dict[st
     }
 
 # Load SST-2 validation split and tokenize based on max sequence length
-def load_and_tokenized_sst2_validation(model_name: str, max_sequence_length: int) -> object:
+def load_and_tokenize_sst2_validation(model_name: str, max_sequence_length: int) -> object:
     raw_datasets = load_dataset("glue", "sst2")
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast = True)
 
