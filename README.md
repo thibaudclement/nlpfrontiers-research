@@ -6,17 +6,17 @@ This project investigates accuracy–efficiency tradeoffs in pretrained NLP mode
 
 We used, and recommend for reproducibility, a VM instance in Google Cloud Platform, as follows:
 
-- Region: us-central1
-- Zone: us-central1-a
-- Machine family: GPU
-- Operating system: Ubuntu 22.04 or 24.04
-- Architecture : x86_64
-- Series: NVIDIA L4 (g2-standard-4)
-- Provisioning: Standard
-- Disk: 100GB (balanced persistent)
-- CUDA: 13.1
-- Python: 3.12
-- PyTorch: cu121 build
+- Region: `us-central1`
+- Zone: `us-central1-a`
+- Machine family: `GPU`
+- Operating system: `Ubuntu 22.04` or `Ubuntu 24.04`
+- Architecture : `x86_64`
+- Series: `NVIDIA L4` (`g2-standard-4`)
+- Provisioning: `Standard`
+- Disk: `100GB` (`balanced persistent`)
+- CUDA: `13.1`
+- Python: `3.12`
+- PyTorch: `cu121 build`
 
 We use `<VM_NAME>` to interact with that VM instance in the rest of this project.
 
