@@ -39,12 +39,15 @@ For faster downloads, we recommend to include a Hugging Face access token in a `
 
 ```
 HF_TOKEN=<YOUR_HF_ACCESS_TOKEN>
+HUGGINGFACE_HUB_TOKEN=<YOUR_HF_ACCESS_TOKEN>
 ```
 
-Alternatively, you may set your Hugging Face access token as an environment variable with:
+Alternatively, you may set your Hugging Face access token as an environment variable in the via the VM command line with:
 
 ```
-export HF_TOKEN=<YOUR_HF_ACCESS_TOKEN>
+echo 'export HF_TOKEN=<YOUR_HF_ACCESS_TOKEN>' >> ~/.bashrc
+echo 'export HUGGINGFACE_HUB_TOKEN=<YOUR_HF_ACCESS_TOKEN>' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ## Phase 1: Establish Baseline
@@ -56,17 +59,45 @@ We fine-tune `bert-base-uncased` on SST-2 (GLUE) and measure:
 - Energy consumption (J per example) via NVML power sampling
 - Peak GPU memory usage
 
-You may replicate the baseline by running Phase 1 on your VM instance with the following command:
+Specifically, we established a controlled baseline using:
+
+- Model: `bert-base-uncased`
+- Dataset: `SST-2` (`GLUE`)
+- Max sequence length: `128`
+- Batch size: `32`
+- Epochs: `2`
+- Learning rate: `3e-5`
+- Weight decay: `0.01`
+- Warmup ratio: `0.06`
+- Seed: `42`
+
+We obtained the following results:
+
+- Validation accuracy: `0.9300`
+- Latency: `~3.18 ms / example`
+- Energy: `~0.231 J / example`
+- Energy per correct prediction: `~0.249 J`
+- Peak GPU memory: `~720 MB`
+
+You may replicate this baseline by running Phase 1 on your VM instance with the following command:
 
 ```
 python -m src.run_phase_1
 ```
 
-Once your baseline run completes, outputs are stored under:
+Once your baseline run completes, all outputs are stored under:
 
 ```
 runs/<timestamp>_phase_1_baseline/
 ```
+
+This directory will include:
+
+- `metrics.json`
+- `power_trace.csv`
+- `pareto.csv`
+- `pareto_frontier.png`
+- `best_model/`
 
 You can download that output to your local machine as follows:
 
@@ -76,3 +107,5 @@ gcloud compute scp --recurse \
   ./outputs \
   --zone <ZONE>
 ```
+
+This baseline configuration is frozen and used for all subsequent efficiency comparisons in Phase 2 to ensure apples-to-apples analysis.
