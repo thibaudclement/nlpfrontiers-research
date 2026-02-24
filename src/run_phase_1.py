@@ -1,5 +1,5 @@
 import json
-from configs import ExperimentConfig, create_run_directory, save_experiment_config
+from configs import ExperimentConfig, create_run_directory, save_config
 from data import load_and_tokenize_sst2
 from evaluate_inference import benchmark_inference
 from finetune import finetune_baseline
@@ -9,7 +9,7 @@ from pareto import save_pareto_table, plot_energy_accuracy_pareto_frontier
 def run_phase_1() -> None:
     config = ExperimentConfig(run_name = "phase_1_baseline")
     run_directory = create_run_directory(base_directory = "runs", run_name = config.run_name)
-    save_experiment_config(config, run_directory)
+    save_config(config, run_directory)
     data = load_and_tokenize_sst2(model_name = config.model_name, max_sequence_length = config.max_sequence_length)
 
     # Finetune baseline model
@@ -31,10 +31,10 @@ def run_phase_1() -> None:
     # Benchmark inference on best model
     inference_output = benchmark_inference(
         run_directory = run_directory,
-        model_directory = run_directory / "best_model",
+        model_directory = finetune_output["best_model_directory"],
         evaluation_dataset = data["validation"],
         evaluation_batch_size = config.evaluation_batch_size,
-        num_inferance_batches = config.num_inference_batches,
+        num_inference_batches = config.num_inference_batches,
         power_sample_interval_s = config.power_sample_interval_s,
         gpu_index = 0
     )

@@ -37,7 +37,7 @@ def finetune_baseline(
     
     # Configure Hugging Face Trainer
     training_args = TrainingArguments(
-        output_directory = str(run_directory / "checkpoints"),
+        output_dir = str(run_directory / "checkpoints"),
         evaluation_strategy = "epoch",
         save_strategy = "epoch",
         learning_rate = learning_rate,
@@ -51,11 +51,11 @@ def finetune_baseline(
         metric_for_best_model = "accuracy",
         greater_is_better = True,
         fp16 = use_fp16,
-        repot_to = "none",
+        report_to = "none",
         seed = seed,
     )
 
-    traier = Trainer(
+    trainer = Trainer(
         model = model,
         args = training_args,
         train_dataset = train_dataset,

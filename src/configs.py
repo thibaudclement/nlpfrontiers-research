@@ -1,6 +1,6 @@
 import json
 from dataclasses import asdict, dataclass
-from datetime
+from datetime import datetime
 from pathlib import Path
 
 # Store experiment parameters for reproducibility
@@ -34,7 +34,7 @@ def create_run_directory(base_directory: str, run_name: str) -> Path:
     run_directory.mkdir(parents = True, exist_ok = False)
     return run_directory
 
-# Persit configuration to disk for reproducibility
+# Save configuration to disk for reproducibility
 def save_config(config: ExperimentConfig, run_directory: Path) -> None:
     config_path = run_directory / "config.json"
     with open(config_path, "w", encoding = "utf-8") as f:

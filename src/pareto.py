@@ -1,8 +1,7 @@
 from pathlib import Path
-from turtle import pd
 from typing import List, Dict
 import matplotlib.pyplot as plt
-import pandas
+import pandas as pd
 
 # Save Pareto table for comparison
 def save_pareto_table(rows: List[Dict[str, object]], run_directory: Path) -> Path:
@@ -12,8 +11,8 @@ def save_pareto_table(rows: List[Dict[str, object]], run_directory: Path) -> Pat
     return output_path
 
 # Plot Pareto frontier for energy vs accuracy
-def plot_energy_accuracy_pareto_frontier(pareto_csv_paths: Path, run_directory: Path) -> Path:
-    data_frame = pd.read_csv(pareto_csv_paths)
+def plot_energy_accuracy_pareto_frontier(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
     plt.figure()
     plt.scatter(data_frame["energy_per_example_j"], data_frame["accuracy"])
     plt.xlabel("Energy (Joule / Example)")

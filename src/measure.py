@@ -9,14 +9,14 @@ from pynvml import (
     nvmlInit,
     nvmlShutdown,
     nvmlDeviceGetHandleByIndex,
-    nvmlDeviceGetMemoryInfo,
+    nvmlDeviceGetPowerUsage,
 )
 
 # Store raw power samples for integration and debugging
 @dataclass
 class PowerSample:
     timestamp_s: float
-    power_mw: int
+    power_w: int
 
 # Sample GPU power in background threat with NVML
 class GPUPowerSampler:
@@ -25,7 +25,7 @@ class GPUPowerSampler:
         self.sample_interval_s = sample_interval_s
         self._samples: List[PowerSample] = []
         self._stop_event = threading.Event()
-        self._thead: Optional[threading.Thread] = None
+        self._thread: Optional[threading.Thread] = None
 
     # Start sampling power at fixed intervals
     def start(self) -> None:
@@ -51,23 +51,25 @@ class GPUPowerSampler:
         handle = nvmlDeviceGetHandleByIndex(self.gpu_index)
         start_time = time.perf_counter()
         while not self._stop_event.is_set():
-            t = time.perf_counter() - start_time
+            elapsed_time_s = time.perf_counter() - start_time
             # Important: NVML report power in milliwatts, which requires conversion to watts
-            power_mw = nvmlDeviceGetMemoryInfo(handle)
-            self._samples.append(PowerSample(timestamp_s = t, power_w = power_mw.used / 1000.0)
+            power_mw = nvmlDeviceGetPowerUsage(handle)
+            power_w = power_mw / 1000.0
+            self._samples.append(PowerSample(timestamp_s = elapsed_time_s, power_w = power_w))
+            time.sleep(self.sample_interval_s)
                                  
-    # Compute energy in joules by integrating power samples over time
-    def integrate_energy(samples: List[PowerSample]) -> float:
-        if len(samples) < 2:
-            return float("nan")
-        times = np.array([sample.timestamp_s for sample in samples], dtype = np.float64)
-        powers = np.array([s.power_w for sample in samples], dtype = np.float64)
-        return float(np.trapz(y = powers, x = times))
+# Compute energy in joules by integrating power samples over time
+def integrate_energy(samples: List[PowerSample]) -> float:
+    if len(samples) < 2:
+        return float("nan")
+    times = np.array([sample.timestamp_s for sample in samples], dtype = np.float64)
+    powers = np.array([sample.power_w for sample in samples], dtype = np.float64)
+    return float(np.trapz(y = powers, x = times))
 
-    # Save raw power trace to CSV
-    def save_power_trace_csv(samples: List[PowerSample], output_path: Path) -> None:
-        with open(output_path, "w", newline = "", encoding = "utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["timestamp_s", "power_w"])
-            for sample in samples:
-                writer.writerow([f"{sample.timestamp_s:.6f}", f"{sample.power_w}"])
+# Save raw power trace to CSV
+def save_power_trace_csv(samples: List[PowerSample], output_path: Path) -> None:
+    with open(output_path, "w", newline = "", encoding = "utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["timestamp_s", "power_w"])
+        for sample in samples:
+            writer.writerow([f"{sample.timestamp_s:.6f}", f"{sample.power_w}"])

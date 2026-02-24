@@ -1,7 +1,7 @@
 import json
 import time
-from dataclasses
-from pathlib
+from dataclasses import dataclass
+from pathlib import Path
 from typing import List
 import numpy as np
 import torch
@@ -24,15 +24,16 @@ def benchmark_inference(
     model_directory: str,
     evaluation_dataset: object,
     evaluation_batch_size: int,
-    num_inferance_batches: int,
+    num_inference_batches: int,
     power_sample_interval_s: float,
+    gpu_index: int = 0
 ) -> InferenceBenchmarkResult:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = AutoModelForSequenceClassification.from_pretrained(model_directory)
     model.to(device)
     model.eval()
 
-    loader = DataLoader(evaluation_dataset, batch_size = evaluation_batch_size, shuffle = false)
+    loader = DataLoader(evaluation_dataset, batch_size = evaluation_batch_size, shuffle = False)
 
     # Reset peak memory stats before inference
     if device.type == "cuda":
@@ -45,7 +46,7 @@ def benchmark_inference(
             if i >= warmup_batches:
                 break
             inputs = {k: v.to(device) for k, v in batch.items()}
-            _ = model(**batch)
+            _ = model(**inputs)
     if device.type == "cuda":
         torch.cuda.synchronize()
     
@@ -77,7 +78,7 @@ def benchmark_inference(
             all_labels.extend(labels)
 
             measured_batches += 1
-            if measured_batches >= num_inferance_batches:
+            if measured_batches >= num_inference_batches:
                 break
     
     end_time = time.perf_counter()
