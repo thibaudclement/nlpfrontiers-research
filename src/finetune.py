@@ -33,8 +33,8 @@ def finetune_baseline(
     warmup_steps = int(total_training_steps * warmup_ratio)
 
     # Compute accuracy from logits and labels
-    def compute_metrics(evalulation_predictions):
-        logits, labels = evalulation_predictions
+    def compute_metrics(evaluation_predictions):
+        logits, labels = evaluation_predictions
         preds = np.argmax(logits, axis = -1)
         return accuracy_metric.compute(predictions = preds, references = labels)
     

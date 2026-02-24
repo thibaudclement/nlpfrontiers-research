@@ -50,7 +50,13 @@ You may replicate the baseline by running Phase 1 on your VM instance with the f
 python -m src.run_phase_1
 ```
 
-Once your baseline run completes, you can download the output to your local machine as follows:
+Once your baseline run completes, outputs are stored under:
+
+```
+runs/<timestamp>_phase_1_baseline/
+```
+
+You can download that output to your local machine as follows:
 
 ```
 gcloud compute scp --recurse \
