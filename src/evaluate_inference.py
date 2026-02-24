@@ -134,8 +134,6 @@ def benchmark_inference_model(
     model.to(device)
     model.eval()
 
-    # Ensure output directory exists before writing traces
-    run_directory.mkdir(parents = True, exist_ok = False)
     loader = DataLoader(evaluation_dataset, batch_size = evaluation_batch_size, shuffle = False)
 
     # Reset peak memory stats before inference
