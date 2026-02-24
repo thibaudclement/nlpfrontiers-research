@@ -15,8 +15,8 @@ class ExperimentConfig:
     max_sequence_length: int = 128
     train_batch_size: int = 32
     evaluation_batch_size: int = 64
-    learning_rate: float = 2e-5
-    num_train_epochs: int = 3
+    learning_rate: float = 3e-5
+    num_train_epochs: int = 2
     weight_decay: float = 0.01
     warmup_ratio: float = 0.06
 
