@@ -99,7 +99,7 @@ This directory will include:
 - `pareto_frontier.png`
 - `best_model/`
 
-You can download that output to your local machine as follows:
+You may download that output to your local machine as follows:
 
 ```
 gcloud compute scp --recurse \
@@ -116,7 +116,7 @@ In Phase 2, we want to evaluate a set of efficiency techniques that target diffe
 
 ### Max Sequence Length
 
-You may evaluate max sequence length reduction with the following command:
+You may evaluate max sequence length reduction (with `128` to `16`) with the following command:
 
 ```
 python -m src.run_phase_2 \
@@ -124,5 +124,18 @@ python -m src.run_phase_2 \
   --sequence_lengths 128 96 64 48 40 32 24 16
 ```
 
+Then, you may download that output to your local machine as follows:
 
+```
+gcloud compute scp --recurse \
+  nlpfrontiers-vm:~/nlpfrontiers-research/runs/<run_id> \
+  ./phase_2_max_sequence_length_sweep \
+  --zone us-central1-a \
+  --project final-project-488320
+```
 
+This will include:
+
+- `pareto.csv`
+- `energy_accuracy_pareto_frontier.png`
+- `energy_latency_pareto_frontier.png`
