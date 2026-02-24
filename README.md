@@ -109,3 +109,20 @@ gcloud compute scp --recurse \
 ```
 
 This baseline configuration is frozen and used for all subsequent efficiency comparisons in Phase 2 to ensure apples-to-apples analysis.
+
+## Phase 2: Run Experiments
+
+In Phase 2, we want to evaluate a set of efficiency techniques that target different sources of redundancy: (i) max sequence length reduction, (ii) layer reduction, and (iii) quantization.
+
+### Max Sequence Length
+
+You may evaluate max sequence length reduction with the following command:
+
+```
+python -m src.run_phase_2 \
+  --baseline_model_directory runs/<run_id>/best_model \
+  --sequence_lengths 128 96 64 48 40 32 24 16
+```
+
+
+
