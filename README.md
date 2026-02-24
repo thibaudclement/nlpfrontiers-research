@@ -12,13 +12,19 @@ We used, and recommend for reproducibility, a VM instance in Google Cloud Platfo
 - Operating system: `Ubuntu 22.04` or `Ubuntu 24.04`
 - Architecture : `x86_64`
 - Series: `NVIDIA L4` (`g2-standard-4`)
+- Driver-supported CUDA: `13.1`
 - Provisioning: `Standard`
 - Disk: `100GB` (`balanced persistent`)
-- CUDA: `13.1`
 - Python: `3.12`
 - PyTorch: `cu121 build`
 
 We use `<VM_NAME>` to interact with that VM instance in the rest of this project.
+
+You may SSH into the VM via:
+
+```
+gcloud compute ssh <VM_NAME> --zone us-central1-a
+```
 
 We recommend the following steps for installation purposes:
 
@@ -29,7 +35,13 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install -r requirements.txt
 ```
 
-For faster downloads, we recommend to include a Hugging Face token in a `.env` file, as follows:
+For faster downloads, we recommend to include a Hugging Face access token in a `.env` file, as follows:
+
+```
+HF_TOKEN=<YOUR_HF_ACCESS_TOKEN>
+```
+
+Alternatively, you may set your Hugging Face access token as an environment variable with:
 
 ```
 export HF_TOKEN=<YOUR_HF_ACCESS_TOKEN>

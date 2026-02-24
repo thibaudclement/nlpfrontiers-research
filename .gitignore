@@ -5,5 +5,4 @@ __pycache__/
 runs/
 .ipynb_checkpoints/
 .DS_Store
-phase_1_baseline_outputs
-phase_1_baseline_outputs_v1
+runs/
