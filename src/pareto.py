@@ -20,7 +20,12 @@ def plot_energy_accuracy_pareto_frontier(pareto_csv_path: Path, run_directory: P
     # Extract values and labels for plotting and annotation
     x = data_frame["energy_per_example_j"].to_numpy()
     y = data_frame["accuracy"].to_numpy()
-    labels = data_frame["max_sequence_length"].astype(int).to_numpy()
+
+    # Use labels for annotations when they exist
+    if "label" in data_frame.columns:
+        labels = data_frame["label"].astype(str).to_numpy()
+    else:
+        labels = data_frame["max_sequence_length"].astype(int).astype(str).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
     plt.figure()
@@ -28,13 +33,13 @@ def plot_energy_accuracy_pareto_frontier(pareto_csv_path: Path, run_directory: P
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
-    # Annotate data points with max sequence length for interpretability
+    # Annotate data points
     for xi, yi, li in zip(x, y, labels):
         plt.annotate(
-            f"{li}",
+            li,
             (xi, yi),
             textcoords = "offset points",
-            xytext = (5, 5),
+            xytext = (4, 4),
             ha = "left",
             va = "bottom",
             fontsize = 9,
@@ -68,7 +73,12 @@ def plot_energy_latency_pareto_frontier(pareto_csv_path: Path, run_directory: Pa
     # Extract values and labels for plotting and annotation
     x = data_frame["energy_per_example_j"].to_numpy()
     y = data_frame["average_latency_per_example_ms"].to_numpy()
-    labels = data_frame["max_sequence_length"].astype(int).to_numpy()
+
+    # Use labels for annotations when they exist
+    if "label" in data_frame.columns:
+        labels = data_frame["label"].astype(str).to_numpy()
+    else:
+        labels = data_frame["max_sequence_length"].astype(int).astype(str).to_numpy()   
 
     # Create scatter plot with dashed lines to visualize frontier
     plt.figure()
@@ -76,13 +86,13 @@ def plot_energy_latency_pareto_frontier(pareto_csv_path: Path, run_directory: Pa
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
-    # Annotate data points with max sequence length for interpretability
+    # Annotate data points
     for xi, yi, li in zip(x, y, labels):
         plt.annotate(
-            f"{li}",
+            li,
             (xi, yi),
-            textcoords = "offset points",
-            xytext = (2, 5),
+            textcoord = "offset points",
+            xytext = (4, 4),
             ha = "left",
             va = "bottom",
             fontsize = 9,
