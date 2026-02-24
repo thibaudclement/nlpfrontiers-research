@@ -28,6 +28,9 @@ def finetune_baseline(
 
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels = 2)
     accuracy_metric = evaluate.load("accuracy")
+    num_update_steps_per_epoch = (len(train_dataset) + train_batch_size - 1) // train_batch_size
+    total_training_steps = int(num_update_steps_per_epoch * num_train_epochs)
+    warmup_steps = int(total_training_steps * warmup_ratio)
 
     # Compute accuracy from logits and labels
     def compute_metrics(evalulation_predictions):
@@ -45,7 +48,7 @@ def finetune_baseline(
         per_device_eval_batch_size = evaluation_batch_size,
         num_train_epochs = num_train_epochs,
         weight_decay = weight_decay,
-        warmup_ratio = warmup_ratio,
+        warmup_steps = warmup_steps,
         logging_steps = 50,
         load_best_model_at_end = True,
         metric_for_best_model = "accuracy",
