@@ -46,20 +46,24 @@ def run_phase_2_sequence_length_sweep() -> None:
     # Sweep max sequence length with fixed model weights
     for max_sequence_length in args.sequence_lengths:
         # Tokenize validation data for given max sequence length
-        tokenized_validation = load_and_tokenized_sst2_validation(
+        tokenized_validation = load_and_tokenize_sst2_validation(
             model_name = "bert-base-uncased",
-            max_sequence_length = max_sequence_length
+            max_sequence_length = max_sequence_length,
         )
+
+        # Create subdirectory for this max sequence length configuration
+        sub_run_directory = run_directory / f"max_sequence_length_{max_sequence_length}"
+        sub_run_directory.mkdir(parents = True, exist_ok = False)
 
         # Benchmark inference for given max sequence length
         inference_output = benchmark_inference(
-            run_directory = run_directory / f"max_sequence_length_{max_sequence_length}",
+            run_directory = sub_run_directory,
             model_directory = args.baseline_model_directory,
             evaluation_dataset = tokenized_validation,
             evaluation_batch_size = args.evaluation_batch_size,
             num_inference_batches = args.num_inference_batches,
             power_sample_interval_s = args.power_sample_interval_s,
-            gpu_index = args.gpu_index
+            gpu_index = args.gpu_index,
         )
 
         # Record one row per configuration for Pareto analysis
@@ -70,7 +74,7 @@ def run_phase_2_sequence_length_sweep() -> None:
             "energy_per_example_j": inference_output.energy_per_example_j,
             "energy_per_correct_j": inference_output.energy_per_correct_j,
             "average_latency_per_example_ms": inference_output.average_latency_per_example_ms,
-            "peak_gpu_memory_mb": inference_output.peak_gpu_memory_mb
+            "peak_gpu_memory_mb": inference_output.peak_gpu_memory_mb,
         })
 
     # Save Pareto table and plot frontier
