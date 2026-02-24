@@ -12,7 +12,7 @@ from .pareto import save_pareto_table, plot_energy_accuracy_pareto_frontier, plo
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--baseline_model_directory", type = str, required = True)
-    parser.add_argument("--num_layers_to_keep", type = int, nargs = "+", default = [12, 10, 8, 6, 4, 2])
+    parser.add_argument("--num_layers", type = int, nargs = "+", default = [12, 10, 8, 6, 4, 2])
     parser.add_argument("--max_sequence_length", type = int, default = 128)
     parser.add_argument("--evaluation_batch_size", type = int, default = 64)
     parser.add_argument("--num_inference_batches", type = int, default = 200)
@@ -30,7 +30,7 @@ def load_bert_with_reduced_layers(model_directory: str, num_encoder_layers: int)
         raise ValueError(f"num_encoder_layers must be between 1 and {original_num_layers}, got {num_encoder_layers}")
     
     # Replace encoder layers with truncated version
-    model.bert.encoder.layer = torch.nn.ModuleList(model.bert.encoder.layer[:num_encoder_layers])
+    model.bert.encoder.layer = torch.nn.ModuleList(list(model.bert.encoder.layer[:num_encoder_layers]))
     return model
 
 # Run Phase 2: Fixed model, varying number of layers at inference time

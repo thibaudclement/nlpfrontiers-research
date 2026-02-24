@@ -91,7 +91,7 @@ def plot_energy_latency_pareto_frontier(pareto_csv_path: Path, run_directory: Pa
         plt.annotate(
             li,
             (xi, yi),
-            textcoord = "offset points",
+            textcoords = "offset points",
             xytext = (4, 4),
             ha = "left",
             va = "bottom",
