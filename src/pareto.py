@@ -144,7 +144,7 @@ def plot_energy_accuracy_layers(pareto_csv_path: Path, run_directory: Path) -> P
     plt.title("Energy-Accuracy Pareto Frontier (Layer Reduction)")
     
     # Force axes bounds for visual clarity (keep consistent with seq-len plots)
-    plt.ylim(0.82, 0.94)
+    plt.ylim(0.48, 0.94)
     x_min, x_max = float(x.min()), float(x.max())
     plt.xlim(max(0.0, x_min - 0.05), x_max + 0.05)
 
@@ -192,8 +192,7 @@ def plot_energy_latency_layers(pareto_csv_path: Path, run_directory: Path) -> Pa
     plt.title("Energy-Latency Pareto Frontier (Layer Reduction)")
     
     # Force axes bounds for visual clarity (tighter latency padding than ±5ms)
-    y_min, y_max = float(y.min()), float(y.max())
-    plt.ylim(max(0.0, y_min - 0.2), y_max + 0.3)
+    plt.ylim(0.0, 4.0)
     x_min, x_max = float(x.min()), float(x.max())
     plt.xlim(max(0.0, x_min - 0.05), x_max + 0.05)
 

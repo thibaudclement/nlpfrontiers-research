@@ -86,4 +86,3 @@ def run_phase_2_sequence_length_sweep() -> None:
 
 if __name__ == "__main__":
     run_phase_2_sequence_length_sweep()
-
