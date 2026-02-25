@@ -1,0 +1,25 @@
+{
+    "baseline_model_directory": "runs/2026-02-24_17-16-44_phase_1_baseline/best_model",
+    "dataset": "glue/sst2",
+    "evaluation_batch_size": 64,
+    "gpu_index": 0,
+    "model_architecture": "bert-base-uncased finetuned classifier",
+    "note": "Combination sweep nests precision and sequence length and logs one combined pareto.csv.",
+    "num_inference_batches": 200,
+    "power_sample_interval_s": 0.05,
+    "precisions": [
+        "fp32",
+        "fp16"
+    ],
+    "run_name": "phase_2_combination_sweep",
+    "sequence_lengths": [
+        128,
+        96,
+        64,
+        48,
+        40,
+        32,
+        24,
+        16
+    ]
+}
