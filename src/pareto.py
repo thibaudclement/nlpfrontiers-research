@@ -201,3 +201,85 @@ def plot_energy_latency_layers(pareto_csv_path: Path, run_directory: Path) -> Pa
     plt.savefig(output_path, dpi=200)
     plt.close()
     return output_path
+
+# Plot energy-accuracy Pareto frontier for precision
+def plot_energy_accuracy_precision(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
+    data_frame = data_frame.sort_values("energy_per_example_j", ascending = True)
+
+    x = data_frame["energy_per_example_j"].to_numpy()
+    y = data_frame["accuracy"].to_numpy()
+    labels = data_frame["label"].astype(str).to_numpy()
+
+    plt.figure()
+    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
+    plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
+
+    for xi, yi, li in zip(x, y, labels):
+        plt.annotate(
+            li,
+            (xi, yi),
+            textcoords = "offset points",
+            xytext = (5, 5),
+            ha = "left",
+            va = "bottom",
+            fontsize = 9,
+            zorder = 3,
+        )
+
+    plt.xlabel("Energy (J / Example)")
+    plt.ylabel("Accuracy")
+    plt.title("Energy-Accuracy Pareto Frontier (Precision)")
+
+    y_min, y_max = float(y.min()), float(y.max())
+    plt.ylim(max(0.0, y_min - 0.02), min(1.0, y_max + 0.02))
+    x_min, x_max = float(x.min()), float(x.max())
+    plt.xlim(max(0.0, x_min - 0.02), x_max + 0.02)
+
+    plt.tight_layout()
+    output_path = run_directory / "energy_accuracy_precision.png"
+    plt.savefig(output_path)
+    plt.close()
+    return output_path
+
+# Plot energy-latency Pareto frontier for precision
+def plot_energy_latency_precision(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
+    data_frame = data_frame.sort_values("energy_per_example_j", ascending = True)
+
+    x = data_frame["energy_per_example_j"].to_numpy()
+    y = data_frame["average_latency_per_example_ms"].to_numpy()
+    labels = data_frame["label"].astype(str).to_numpy()
+
+    plt.figure()
+    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
+    plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
+
+    for xi, yi, li in zip(x, y, labels):
+        plt.annotate(
+            li,
+            (xi, yi),
+            textcoords = "offset points",
+            xytext = (5, 5),
+            ha = "left",
+            va = "bottom",
+            fontsize = 9,
+            zorder = 3,
+        )
+
+    plt.xlabel("Energy (J / Example)")
+    plt.ylabel("Latency (ms / Example)")
+    plt.title("Energy-Latency Pareto Frontier (Precision)")
+
+    y_min, y_max = float(y.min()), float(y.max())
+    plt.ylim(max(0.0, y_min - 0.2), y_max + 0.3)
+    x_min, x_max = float(x.min()), float(x.max())
+    plt.xlim(max(0.0, x_min - 0.02), x_max + 0.02)
+
+    plt.tight_layout()
+    output_path = run_directory / "energy_latency_precision.png"
+    plt.savefig(output_path, dpi=200)
+    plt.close()
+    return output_path
