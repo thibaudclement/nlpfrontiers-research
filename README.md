@@ -204,7 +204,6 @@ python -m src.run_phase_2_combination \
   --baseline_model_directory runs/<RUN_ID> \
   --precisions fp32 fp16 \
   --sequence_lengths 128 96 64 48 40 32 24 16 \
-  --max_sequence_length 128 \
   --evaluation_batch_size 64 \
   --num_inference_batches 200
 ```
