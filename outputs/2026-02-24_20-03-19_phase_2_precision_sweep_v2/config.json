@@ -1,0 +1,16 @@
+{
+    "baseline_model_directory": "runs/2026-02-24_17-16-44_phase_1_baseline/best_model",
+    "dataset": "glue/sst2",
+    "evaluation_batch_size": 64,
+    "gpu_index": 0,
+    "max_sequence_length": 128,
+    "model_architecture": "bert-base-uncased finetuned classifier",
+    "note": "FP8 is best-effort and may be skipped if unsupported.",
+    "num_inference_batches": 200,
+    "power_sample_interval_s": 0.05,
+    "precisions": [
+        "fp32",
+        "fp16"
+    ],
+    "run_name": "phase_2_precision_sweep"
+}

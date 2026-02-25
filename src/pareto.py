@@ -327,7 +327,7 @@ def plot_energy_accuracy_combination(pareto_csv_path: Path, run_directory: Path)
 
     # Set axes bounds for visual clarity
     plt.ylim(0.82, 0.94)
-    plt.xlim(0.00, 0.06)
+    plt.xlim(0.00, 0.05)
 
     plt.tight_layout()
     output_path = run_directory / "energy_accuracy_combination.png"
@@ -373,8 +373,8 @@ def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) 
     plt.title("Energy-Latency Pareto Frontier (FP16 and Max Sequence Length in Tokens)")
 
     # Set axes bounds for visual clarity
-    plt.ylim(0.0, 1.0)
-    plt.xlim(0.00, 0.06)
+    plt.ylim(0.1, 0.9)
+    plt.xlim(0.00, 0.05)
 
     plt.tight_layout()
     output_path = run_directory / "energy_latency_precision.png"
