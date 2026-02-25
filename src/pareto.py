@@ -44,12 +44,11 @@ def plot_energy_accuracy_max_sequence_length(pareto_csv_path: Path, run_director
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Accuracy")
-    plt.title("Energy-Accuracy Pareto Frontier (Max Sequence Length)")
+    plt.title("Energy-Accuracy Pareto Frontier (Max Sequence Length in Tokens)")
     
     # Set axes bounds for visual clarity
     plt.ylim(0.82, 0.94)
-    x_min, x_max = float(x.min()), float(x.max())
-    plt.xlim(max(0.0, x_min - 0.05), x_max + 0.05)
+    plt.xlim(0.00, 0.25)
 
     plt.tight_layout()
 
@@ -92,13 +91,11 @@ def plot_energy_latency_max_sequence_length(pareto_csv_path: Path, run_directory
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Latency (ms / Example)")
-    plt.title("Energy-Latency Pareto Frontier (Max Sequence Length)")
+    plt.title("Energy-Latency Pareto Frontier (Max Sequence Length in Tokens)")
     
     # Set axes bounds for visual clarity
-    y_min, y_max = float(y.min()), float(y.max())
-    plt.ylim(max(0.0, y_min - 5), y_max + 5)
-    x_min, x_max = float(x.min()), float(x.max())
-    plt.xlim(max(0.0, x_min - 0.05), x_max + 0.05)
+    plt.ylim(0.00, 4.00)
+    plt.xlim(0.00, 0.25)
 
     plt.tight_layout()
 
@@ -141,7 +138,7 @@ def plot_energy_accuracy_layers(pareto_csv_path: Path, run_directory: Path) -> P
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Accuracy")
-    plt.title("Energy-Accuracy Pareto Frontier (Layer Reduction)")
+    plt.title("Energy-Accuracy Pareto Frontier (Encoder Layers)")
     
     # Set axes bounds for visual clarity
     plt.ylim(0.40, 1.00)
@@ -189,7 +186,7 @@ def plot_energy_latency_layers(pareto_csv_path: Path, run_directory: Path) -> Pa
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Latency (ms / Example)")
-    plt.title("Energy-Latency Pareto Frontier (Layer Reduction)")
+    plt.title("Energy-Latency Pareto Frontier (Encoder Layers)")
     
     # Set axes bounds for visual clarity
     plt.ylim(0.0, 3.5)
@@ -234,7 +231,7 @@ def plot_energy_accuracy_precision(pareto_csv_path: Path, run_directory: Path) -
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Accuracy")
-    plt.title("Energy-Accuracy Pareto Frontier (Precision)")
+    plt.title("Energy-Accuracy Pareto Frontier (Inference Precision)")
 
     # Set axes bounds for visual clarity
     y_min, y_max = float(y.min()), float(y.max())
@@ -280,7 +277,7 @@ def plot_energy_latency_precision(pareto_csv_path: Path, run_directory: Path) ->
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Latency (ms / Example)")
-    plt.title("Energy-Latency Pareto Frontier (Precision)")
+    plt.title("Energy-Latency Pareto Frontier (Inference Precision)")
 
     # Set axes bounds for visual clarity
     y_min, y_max = float(y.min()), float(y.max())
@@ -331,7 +328,7 @@ def plot_energy_accuracy_combination(pareto_csv_path: Path, run_directory: Path)
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Accuracy")
-    plt.title("Energy-Accuracy Pareto Frontier (FP16 and Max Sequence Length)")
+    plt.title("Energy-Accuracy Pareto Frontier (FP16 and Max Sequence Length in Tokens)")
 
     # Set axes bounds for visual clarity
     plt.ylim(0.82, 0.94)
@@ -378,7 +375,7 @@ def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) 
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Latency (ms / Example)")
-    plt.title("Energy-Latency Pareto Frontier (FP16 and Max Sequence Length)")
+    plt.title("Energy-Latency Pareto Frontier (FP16 and Max Sequence Length in Tokens)")
 
     # Set axes bounds for visual clarity
     plt.ylim(0.0, 1.0)
