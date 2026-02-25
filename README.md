@@ -116,7 +116,7 @@ In Phase 2, we want to evaluate a set of efficiency techniques that target diffe
 
 ### Max Sequence Length
 
-You may evaluate max sequence length reduction (with `128` to `16`) with the following command:
+You may evaluate max sequence length reduction (from `128` to `16`) with the following command:
 
 ```
 python -m src.run_phase_2_max_sequence_length \
@@ -137,5 +137,58 @@ gcloud compute scp --recurse \
 This will include:
 
 - `pareto.csv`
-- `energy_accuracy_pareto_frontier.png`
-- `energy_latency_pareto_frontier.png`
+- `energy_accuracy_max_sequence_length.png`
+- `energy_latency_max_sequence_length.png`
+
+### Layers
+
+You may evaluate layers reduction (from `12` to `2`) with the following command:
+
+```
+python -m src.run_phase_2_layers \
+  --baseline_model_directory runs/<run_id>/best_model \
+  --num_layers 12 10 8 6 4 2 \
+  --max_sequence_length 128
+```
+
+Then, you may download that output to your local machine as follows:
+
+```
+gcloud compute scp --recurse \
+  nlpfrontiers-vm:~/nlpfrontiers-research/runs/<run_id> \
+  ./phase_2_layers_sweep \
+  --zone us-central1-a \
+  --project final-project-488320
+```
+
+This will include:
+
+- `pareto.csv`
+- `energy_accuracy_layers.png`
+- `energy_latency_layers.png`
+
+### Precision
+
+```
+python -m src.run_phase_2_precision \
+  --baseline_model_directory runs/<run_id>/best_model \
+  --precisions fp32 fp16 fp8 \
+  --max_sequence_length 128 \
+  --skip_failed_precisions
+```
+
+Then, you may download that output to your local machine as follows:
+
+```
+gcloud compute scp --recurse \
+  nlpfrontiers-vm:~/nlpfrontiers-research/runs/<run_id> \
+  ./phase_2_precision_sweep \
+  --zone us-central1-a \
+  --project final-project-488320
+```
+
+This will include:
+
+- `pareto.csv`
+- `energy_accuracy_precision.png`
+- `energy_latency_precision.png`

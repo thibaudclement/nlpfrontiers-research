@@ -1,7 +1,7 @@
 import argparse
 import json
 from typing import Dict, List
-from Transformers import AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification
 from .configs import create_run_directory
 from .data import load_and_tokenize_sst2_validation
 from .evaluate_inference import benchmark_inference_model_with_precision
