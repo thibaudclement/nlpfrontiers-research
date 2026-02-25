@@ -10,8 +10,8 @@ def save_pareto_table(rows: List[Dict[str, object]], run_directory: Path) -> Pat
     data_frame.to_csv(output_path, index = False)
     return output_path
 
-# Plot Pareto frontier for energy vs accuracy
-def plot_energy_accuracy_pareto_frontier(pareto_csv_path: Path, run_directory: Path) -> Path:
+# Plot energy-accuracy Pareto frontier for max sequence length
+def plot_energy_accuracy_max_sequence_length(pareto_csv_path: Path, run_directory: Path) -> Path:
     data_frame = pd.read_csv(pareto_csv_path)
 
     # Sort points by energy for consistent frontier plotting
@@ -20,12 +20,7 @@ def plot_energy_accuracy_pareto_frontier(pareto_csv_path: Path, run_directory: P
     # Extract values and labels for plotting and annotation
     x = data_frame["energy_per_example_j"].to_numpy()
     y = data_frame["accuracy"].to_numpy()
-
-    # Use labels for annotations when they exist
-    if "label" in data_frame.columns:
-        labels = data_frame["label"].astype(str).to_numpy()
-    else:
-        labels = data_frame["max_sequence_length"].astype(int).astype(str).to_numpy()
+    labels = data_frame["max_sequence_length"].astype(int).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
     plt.figure()
@@ -33,13 +28,13 @@ def plot_energy_accuracy_pareto_frontier(pareto_csv_path: Path, run_directory: P
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
-    # Annotate data points
+    # Annotate data points with max sequence length for interpretability
     for xi, yi, li in zip(x, y, labels):
         plt.annotate(
-            li,
+            f"{li}",
             (xi, yi),
             textcoords = "offset points",
-            xytext = (4, 4),
+            xytext = (5, 5),
             ha = "left",
             va = "bottom",
             fontsize = 9,
@@ -49,7 +44,7 @@ def plot_energy_accuracy_pareto_frontier(pareto_csv_path: Path, run_directory: P
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Accuracy")
-    plt.title("Energy-Accuracy Pareto Frontier")
+    plt.title("Energy-Accuracy Pareto Frontier (Max Sequence Length)")
     
     # Force axes bounds for visual clarity
     plt.ylim(0.82, 0.94)
@@ -58,13 +53,13 @@ def plot_energy_accuracy_pareto_frontier(pareto_csv_path: Path, run_directory: P
 
     plt.tight_layout()
 
-    output_path = run_directory / "energy_accuracy_pareto_frontier.png"
+    output_path = run_directory / "energy_accuracy_max_sequence_length.png"
     plt.savefig(output_path)
     plt.close()
     return output_path
 
-# Plot Pareto frontier for energy vs latency
-def plot_energy_latency_pareto_frontier(pareto_csv_path: Path, run_directory: Path) -> Path:
+# Plot energy-latency Pareto frontier for max sequence length
+def plot_energy_latency_max_sequence_length(pareto_csv_path: Path, run_directory: Path) -> Path:
     data_frame = pd.read_csv(pareto_csv_path)
 
     # Sort points by energy for consistent frontier plotting
@@ -73,12 +68,7 @@ def plot_energy_latency_pareto_frontier(pareto_csv_path: Path, run_directory: Pa
     # Extract values and labels for plotting and annotation
     x = data_frame["energy_per_example_j"].to_numpy()
     y = data_frame["average_latency_per_example_ms"].to_numpy()
-
-    # Use labels for annotations when they exist
-    if "label" in data_frame.columns:
-        labels = data_frame["label"].astype(str).to_numpy()
-    else:
-        labels = data_frame["max_sequence_length"].astype(int).astype(str).to_numpy()   
+    labels = data_frame["max_sequence_length"].astype(int).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
     plt.figure()
@@ -86,13 +76,13 @@ def plot_energy_latency_pareto_frontier(pareto_csv_path: Path, run_directory: Pa
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
-    # Annotate data points
+    # Annotate data points with max sequence length for interpretability
     for xi, yi, li in zip(x, y, labels):
         plt.annotate(
-            li,
+            f"{li}",
             (xi, yi),
             textcoords = "offset points",
-            xytext = (4, 4),
+            xytext = (2, 5),
             ha = "left",
             va = "bottom",
             fontsize = 9,
@@ -102,7 +92,7 @@ def plot_energy_latency_pareto_frontier(pareto_csv_path: Path, run_directory: Pa
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Latency (ms / Example)")
-    plt.title("Energy-Latency Pareto Frontier")
+    plt.title("Energy-Latency Pareto Frontier (Max Sequence Length)")
     
     # Force axes bounds for visual clarity
     y_min, y_max = float(y.min()), float(y.max())
@@ -112,7 +102,104 @@ def plot_energy_latency_pareto_frontier(pareto_csv_path: Path, run_directory: Pa
 
     plt.tight_layout()
 
-    output_path = run_directory / "energy_latency_pareto_frontier.png"
+    output_path = run_directory / "energy_latency_max_sequence_length.png"
     plt.savefig(output_path)
+    plt.close()
+    return output_path
+
+# Plot energy-accuracy Pareto frontier for layers
+def plot_energy_accuracy_layers(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
+
+    # Sort points by energy for consistent frontier plotting
+    data_frame = data_frame.sort_values("energy_per_example_j", ascending = True)
+
+    # Extract values and labels for plotting and annotation
+    x = data_frame["energy_per_example_j"].to_numpy()
+    y = data_frame["accuracy"].to_numpy()
+    labels = data_frame["num_encoder_layers"].astype(int).to_numpy()
+
+    # Create scatter plot with dashed lines to visualize frontier
+    plt.figure()
+    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
+    plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
+
+    # Annotate data points with layer count for interpretability
+    for xi, yi, li in zip(x, y, labels):
+        plt.annotate(
+            f"{li}",
+            (xi, yi),
+            textcoords = "offset points",
+            xytext = (5, 5),
+            ha = "left",
+            va = "bottom",
+            fontsize = 9,
+            zorder = 3
+        )
+
+    # Implement label axes and title
+    plt.xlabel("Energy (J / Example)")
+    plt.ylabel("Accuracy")
+    plt.title("Energy-Accuracy Pareto Frontier (Layer Reduction)")
+    
+    # Force axes bounds for visual clarity (keep consistent with seq-len plots)
+    plt.ylim(0.82, 0.94)
+    x_min, x_max = float(x.min()), float(x.max())
+    plt.xlim(max(0.0, x_min - 0.05), x_max + 0.05)
+
+    plt.tight_layout()
+
+    output_path = run_directory / "energy_accuracy_layers.png"
+    plt.savefig(output_path, dpi=200)
+    plt.close()
+    return output_path
+
+# Plot energy-latency Pareto frontier for layers
+def plot_energy_latency_layers(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
+
+    # Sort points by energy for consistent frontier plotting
+    data_frame = data_frame.sort_values("energy_per_example_j", ascending = True)
+
+    # Extract values and labels for plotting and annotation
+    x = data_frame["energy_per_example_j"].to_numpy()
+    y = data_frame["average_latency_per_example_ms"].to_numpy()
+    labels = data_frame["num_encoder_layers"].astype(int).to_numpy()
+
+    # Create scatter plot with dashed lines to visualize frontier
+    plt.figure()
+    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
+    plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
+
+    # Annotate data points with layer count for interpretability
+    for xi, yi, li in zip(x, y, labels):
+        plt.annotate(
+            f"{li}",
+            (xi, yi),
+            textcoords = "offset points",
+            xytext = (2, 5),
+            ha = "left",
+            va = "bottom",
+            fontsize = 9,
+            zorder = 3
+        )
+
+    # Implement label axes and title
+    plt.xlabel("Energy (J / Example)")
+    plt.ylabel("Latency (ms / Example)")
+    plt.title("Energy-Latency Pareto Frontier (Layer Reduction)")
+    
+    # Force axes bounds for visual clarity (tighter latency padding than ±5ms)
+    y_min, y_max = float(y.min()), float(y.max())
+    plt.ylim(max(0.0, y_min - 0.2), y_max + 0.3)
+    x_min, x_max = float(x.min()), float(x.max())
+    plt.xlim(max(0.0, x_min - 0.05), x_max + 0.05)
+
+    plt.tight_layout()
+
+    output_path = run_directory / "energy_latency_layers.png"
+    plt.savefig(output_path, dpi=200)
     plt.close()
     return output_path

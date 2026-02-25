@@ -5,7 +5,7 @@ from typing import Dict, List
 from .configs import create_run_directory, save_config, ExperimentConfig
 from .data import load_and_tokenize_sst2_validation
 from .evaluate_inference import benchmark_inference
-from .pareto import save_pareto_table, plot_energy_accuracy_pareto_frontier, plot_energy_latency_pareto_frontier
+from .pareto import save_pareto_table, plot_energy_accuracy_max_sequence_length, plot_energy_latency_max_sequence_length
 
 # Parse CLI arguments for selecting baseline model and max sequence length sweep settings
 def parse_arguments() -> argparse.Namespace:
@@ -79,8 +79,8 @@ def run_phase_2_sequence_length_sweep() -> None:
 
     # Save Pareto table and plot frontier
     pareto_csv_path = save_pareto_table(rows = pareto_rows, run_directory = run_directory)
-    _ = plot_energy_accuracy_pareto_frontier(pareto_csv_path, run_directory)
-    _ = plot_energy_latency_pareto_frontier(pareto_csv_path, run_directory)
+    _ = plot_energy_accuracy_max_sequence_length(pareto_csv_path, run_directory)
+    _ = plot_energy_latency_max_sequence_length(pareto_csv_path, run_directory)
 
     print(f"Phase 2 (max sequence length) complete. Results saved to {run_directory}")
 

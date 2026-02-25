@@ -6,7 +6,7 @@ from transformers import AutoModelForSequenceClassification
 from .configs import create_run_directory
 from .data import load_and_tokenize_sst2_validation
 from .evaluate_inference import benchmark_inference_model
-from .pareto import save_pareto_table, plot_energy_accuracy_pareto_frontier, plot_energy_latency_pareto_frontier
+from .pareto import save_pareto_table, plot_energy_accuracy_layers, plot_energy_latency_layers
 
 # Parse CLI arguments for selecting baseline model and layer sweep settings
 def parse_arguments() -> argparse.Namespace:
@@ -97,8 +97,8 @@ def run_phase_2_layers_sweep() -> None:
         })
 
     pareto_csv_path = save_pareto_table(rows = pareto_rows, run_directory = run_directory)
-    _ = plot_energy_accuracy_pareto_frontier(pareto_csv_path, run_directory)
-    _ = plot_energy_latency_pareto_frontier(pareto_csv_path, run_directory)
+    _ = plot_energy_accuracy_layers(pareto_csv_path, run_directory)
+    _ = plot_energy_latency_layers(pareto_csv_path, run_directory)
 
     print(f"Phase 2 (layers) complete. Results saved to {run_directory}")
 
