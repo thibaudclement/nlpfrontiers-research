@@ -23,7 +23,7 @@ We use `<VM_NAME>` to interact with that VM instance in the rest of this project
 You may SSH into the VM via:
 
 ```
-gcloud compute ssh <VM_NAME> --zone us-central1-a
+gcloud compute ssh <VM_NAME> --zone <ZONE>
 ```
 
 We recommend the following steps for installation purposes:
@@ -103,7 +103,7 @@ You may download that output to your local machine as follows:
 
 ```
 gcloud compute scp --recurse \
-  <VM_NAME>:~/nlpfrontiers-research/runs/<run_id> \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
   ./outputs \
   --zone <ZONE>
 ```
@@ -120,7 +120,7 @@ You may evaluate max sequence length reduction (from `128` to `16`) with the fol
 
 ```
 python -m src.run_phase_2_max_sequence_length \
-  --baseline_model_directory runs/<run_id>/best_model \
+  --baseline_model_directory runs/<RUN_ID>/best_model \
   --sequence_lengths 128 96 64 48 40 32 24 16
 ```
 
@@ -128,10 +128,10 @@ Then, you may download that output to your local machine as follows:
 
 ```
 gcloud compute scp --recurse \
-  nlpfrontiers-vm:~/nlpfrontiers-research/runs/<run_id> \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
   ./phase_2_max_sequence_length_sweep \
-  --zone us-central1-a \
-  --project final-project-488320
+  --zone <ZONE> \
+  --project <PROJECT_ID>
 ```
 
 This will include:
@@ -146,7 +146,7 @@ You may evaluate layers reduction (from `12` to `2`) with the following command:
 
 ```
 python -m src.run_phase_2_layers \
-  --baseline_model_directory runs/<run_id>/best_model \
+  --baseline_model_directory runs/<RUN_ID>/best_model \
   --num_layers 12 10 8 6 4 2 \
   --max_sequence_length 128
 ```
@@ -155,10 +155,10 @@ Then, you may download that output to your local machine as follows:
 
 ```
 gcloud compute scp --recurse \
-  nlpfrontiers-vm:~/nlpfrontiers-research/runs/<run_id> \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
   ./phase_2_layers_sweep \
-  --zone us-central1-a \
-  --project final-project-488320
+  --zone <ZONE> \
+  --project <PROJECT_ID>
 ```
 
 This will include:
@@ -169,9 +169,11 @@ This will include:
 
 ### Precision
 
+You may evaluate precision reduction (from `32` to `16`) with the following command:
+
 ```
 python -m src.run_phase_2_precision \
-  --baseline_model_directory runs/<run_id>/best_model \
+  --baseline_model_directory runs/<RUN_ID>/best_model \
   --precisions fp32 fp16 fp8 \
   --max_sequence_length 128 \
   --skip_failed_precisions
@@ -181,10 +183,10 @@ Then, you may download that output to your local machine as follows:
 
 ```
 gcloud compute scp --recurse \
-  nlpfrontiers-vm:~/nlpfrontiers-research/runs/<run_id> \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
   ./phase_2_precision_sweep \
-  --zone us-central1-a \
-  --project final-project-488320
+  --zone <ZONE> \
+  --project <PROJECT_ID>
 ```
 
 This will include:
@@ -192,3 +194,33 @@ This will include:
 - `pareto.csv`
 - `energy_accuracy_precision.png`
 - `energy_latency_precision.png`
+
+### Precision and Max Sequence Length Combination
+
+You may evaluate the combination of precision reduction (from `32` to `16`) and max sequence length reduction (from `128` to `16`) with the following command:
+
+```
+python -m src.run_phase_2_combination \
+  --baseline_model_directory runs/<RUN_ID> \
+  --precisions fp32 fp16 \
+  --sequence_lengths 128 96 64 48 40 32 24 16 \
+  --max_sequence_length 128 \
+  --evaluation_batch_size 64 \
+  --num_inference_batches 200
+```
+
+Then, you may download that output to your local machine as follows:
+
+```
+gcloud compute scp --recurse \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
+  ./phase_2_combination_sweep \
+  --zone <ZONE> \
+  --project <PROJECT_ID>
+```
+
+This will include:
+
+- `pareto.csv`
+- `energy_accuracy_combination.png`
+- `energy_latency_combination.png`
