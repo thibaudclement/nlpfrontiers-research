@@ -142,8 +142,7 @@ def plot_energy_accuracy_layers(pareto_csv_path: Path, run_directory: Path) -> P
     
     # Set axes bounds for visual clarity
     plt.ylim(0.40, 1.00)
-    x_min, x_max = float(x.min()), float(x.max())
-    plt.xlim(max(0.0, x_min - 0.05), x_max + 0.05)
+    plt.xlim(0.00, 0.25)
 
     plt.tight_layout()
 
