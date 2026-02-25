@@ -362,7 +362,7 @@ def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) 
     for xi, yi, li in zip(x, y, labels):
         if li not in interesting_lengths:
             continue
-        
+
         plt.annotate(
             f"{li}",
             (xi, yi),
@@ -387,7 +387,7 @@ def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) 
     plt.xlim(0.00, 0.05)
 
     plt.tight_layout()
-    output_path = run_directory / "energy_latency_precision.png"
+    output_path = run_directory / "energy_latency_combination.png"
     plt.savefig(output_path)
     plt.close()
     return output_path
