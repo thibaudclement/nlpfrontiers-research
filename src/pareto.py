@@ -233,10 +233,8 @@ def plot_energy_accuracy_precision(pareto_csv_path: Path, run_directory: Path) -
     plt.title("Energy-Accuracy Pareto Frontier (Inference Precision)")
 
     # Set axes bounds for visual clarity
-    y_min, y_max = float(y.min()), float(y.max())
-    plt.ylim(max(0.0, y_min - 0.02), min(1.0, y_max + 0.02))
-    x_min, x_max = float(x.min()), float(x.max())
-    plt.xlim(max(0.0, x_min - 0.02), x_max + 0.02)
+    plt.ylim(0.92, 0.94)
+    plt.xlim(0.025, 0.250)
 
     plt.tight_layout()
     output_path = run_directory / "energy_accuracy_precision.png"
@@ -279,10 +277,8 @@ def plot_energy_latency_precision(pareto_csv_path: Path, run_directory: Path) ->
     plt.title("Energy-Latency Pareto Frontier (Inference Precision)")
 
     # Set axes bounds for visual clarity
-    y_min, y_max = float(y.min()), float(y.max())
-    plt.ylim(max(0.0, y_min - 0.2), y_max + 0.3)
-    x_min, x_max = float(x.min()), float(x.max())
-    plt.xlim(max(0.0, x_min - 0.02), x_max + 0.02)
+    plt.ylim(0.0, 3.5)
+    plt.xlim(0.025, 0.250)
 
     plt.tight_layout()
     output_path = run_directory / "energy_latency_precision.png"
