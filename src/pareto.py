@@ -323,7 +323,10 @@ def plot_energy_accuracy_combination(pareto_csv_path: Path, run_directory: Path)
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Accuracy")
-    plt.title("Energy-Accuracy Pareto Frontier (FP16 and Max Sequence Length in Tokens)")
+    plt.title(
+        "Energy-Accuracy Pareto Frontier\n"
+        "(FP16 and Max Sequence Length in Tokens)"
+    )
 
     # Set axes bounds for visual clarity
     plt.ylim(0.82, 0.94)
@@ -355,12 +358,16 @@ def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) 
     plt.scatter(x, y, s = 36, alpha = 1.0, color = "C0", zorder = 2)
 
     # Annotate data points with max sequence length for interpretability
+    interesting_lengths = {128, 96, 64, 48, 40, 32, 16}
     for xi, yi, li in zip(x, y, labels):
+        if li not in interesting_lengths:
+            continue
+        
         plt.annotate(
             f"{li}",
             (xi, yi),
             textcoords = "offset points",
-            xytext = (4, 4),
+            xytext = (2, 4),
             ha = "left",
             va = "bottom",
             fontsize = 9,
@@ -370,7 +377,10 @@ def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) 
     # Implement label axes and title
     plt.xlabel("Energy (J / Example)")
     plt.ylabel("Latency (ms / Example)")
-    plt.title("Energy-Latency Pareto Frontier (FP16 and Max Sequence Length in Tokens)")
+    plt.title(
+        "Energy-Latency Pareto Frontier\n"
+        "(FP16 and Max Sequence Length in Tokens)"
+    )
 
     # Set axes bounds for visual clarity
     plt.ylim(0.1, 0.9)
