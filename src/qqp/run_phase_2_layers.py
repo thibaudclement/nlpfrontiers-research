@@ -6,7 +6,12 @@ from transformers import AutoModelForSequenceClassification
 from .configs import create_run_directory
 from .data import load_and_tokenize_qqp_validation
 from .evaluate_inference import benchmark_inference_model
-from .pareto import save_pareto_table, plot_energy_accuracy_layers, plot_energy_latency_layers
+from .pareto import (
+    save_pareto_table,
+    plot_energy_accuracy_layers,
+    plot_energy_latency_layers,
+    plot_energy_f1_layers,
+)
 
 # Parse CLI arguments for selecting baseline model and layer sweep settings
 def parse_arguments() -> argparse.Namespace:
@@ -23,12 +28,12 @@ def parse_arguments() -> argparse.Namespace:
 # Load fine-tuned BERT classifier with only the first N layers
 def load_bert_with_reduced_layers(model_directory: str, num_encoder_layers: int) -> AutoModelForSequenceClassification:
     model = AutoModelForSequenceClassification.from_pretrained(model_directory)
-    
+
     # Validate layer count
     original_num_layers = len(model.bert.encoder.layer)
     if num_encoder_layers < 1 or num_encoder_layers > original_num_layers:
         raise ValueError(f"num_encoder_layers must be between 1 and {original_num_layers}, got {num_encoder_layers}")
-    
+
     # Replace encoder layers with truncated version
     model.bert.encoder.layer = torch.nn.ModuleList(list(model.bert.encoder.layer[:num_encoder_layers]))
     return model
@@ -90,6 +95,7 @@ def run_phase_2_layers_sweep() -> None:
             "num_encoder_layers": num_encoder_layers,
             "max_sequence_length": args.max_sequence_length,
             "accuracy": inference_output.accuracy,
+            "f1": inference_output.f1,
             "energy_per_example_j": inference_output.energy_per_example_j,
             "energy_per_correct_j": inference_output.energy_per_correct_j,
             "average_latency_per_example_ms": inference_output.average_latency_per_example_ms,
@@ -98,6 +104,7 @@ def run_phase_2_layers_sweep() -> None:
 
     pareto_csv_path = save_pareto_table(rows = pareto_rows, run_directory = run_directory)
     _ = plot_energy_accuracy_layers(pareto_csv_path, run_directory)
+    _ = plot_energy_f1_layers(pareto_csv_path, run_directory)
     _ = plot_energy_latency_layers(pareto_csv_path, run_directory)
 
     print(f"Phase 2 (layers) complete. Results saved to {run_directory}")

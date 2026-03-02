@@ -5,7 +5,12 @@ from transformers import AutoModelForSequenceClassification
 from .configs import create_run_directory
 from .data import load_and_tokenize_qqp_validation
 from .evaluate_inference import benchmark_inference_model_with_precision
-from .pareto import save_pareto_table, plot_energy_accuracy_precision, plot_energy_latency_precision
+from .pareto import (
+    save_pareto_table,
+    plot_energy_accuracy_precision,
+    plot_energy_latency_precision,
+    plot_energy_f1_precision,
+)
 
 # Parse CLI arguments for selecting baseline model and precision sweep settings
 def parse_arguments() -> argparse.Namespace:
@@ -75,6 +80,7 @@ def run_phase_2_precision_sweep() -> None:
                 "precision": precision,
                 "max_sequence_length": args.max_sequence_length,
                 "accuracy": inference_output.accuracy,
+                "f1": inference_output.f1,
                 "energy_per_example_j": inference_output.energy_per_example_j,
                 "energy_per_correct_j": inference_output.energy_per_correct_j,
                 "average_latency_per_example_ms": inference_output.average_latency_per_example_ms,
@@ -93,6 +99,7 @@ def run_phase_2_precision_sweep() -> None:
     # Save Pareto table and plot frontier
     pareto_csv_path = save_pareto_table(rows = pareto_rows, run_directory = run_directory)
     _ = plot_energy_accuracy_precision(pareto_csv_path, run_directory)
+    _ = plot_energy_f1_precision(pareto_csv_path, run_directory)
     _ = plot_energy_latency_precision(pareto_csv_path, run_directory)
 
     print(f"Phase 2 (precision) complete. Results saved to {run_directory}")

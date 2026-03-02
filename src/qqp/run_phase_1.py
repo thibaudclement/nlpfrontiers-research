@@ -10,6 +10,7 @@ def run_phase_1() -> None:
     config = ExperimentConfig(run_name = "phase_1_baseline")
     run_directory = create_run_directory(base_directory = "runs", run_name = config.run_name)
     save_config(config, run_directory)
+
     data = load_and_tokenize_qqp(model_name = config.model_name, max_sequence_length = config.max_sequence_length)
 
     # Finetune baseline model
@@ -44,6 +45,7 @@ def run_phase_1() -> None:
         "trainer_evaluation_metrics": finetune_output["evaluation_metrics"],
         "inference_benchmark_metrics": {
             "accuracy": inference_output.accuracy,
+            "f1": inference_output.f1,
             "average_latency_per_example_ms": inference_output.average_latency_per_example_ms,
             "energy_per_example_j": inference_output.energy_per_example_j,
             "energy_per_correct_j": inference_output.energy_per_correct_j,
@@ -60,6 +62,7 @@ def run_phase_1() -> None:
         "max_sequence_length": config.max_sequence_length,
         "num_encoder_layers": 12,
         "accuracy": inference_output.accuracy,
+        "f1": inference_output.f1,
         "energy_per_example_j": inference_output.energy_per_example_j,
         "average_latency_per_example_ms": inference_output.average_latency_per_example_ms,
         "peak_gpu_memory_mb": inference_output.peak_gpu_memory_mb,

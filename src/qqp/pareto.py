@@ -114,6 +114,47 @@ def plot_energy_latency_max_sequence_length(pareto_csv_path: Path, run_directory
     plt.close()
     return output_path
 
+# Plot energy-F1 Pareto frontier for max sequence length
+def plot_energy_f1_max_sequence_length(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
+
+    # Sort points by energy for consistent frontier plotting
+    data_frame = data_frame.sort_values("energy_per_example_j", ascending = True)
+
+    # Handle case where F1 column is missing
+    if "f1" not in data_frame.columns:
+        raise ValueError("pareto.csv is missing required column 'f1' for F1 plotting.")
+
+    # Extract values and labels for plotting and annotation
+    x = data_frame["energy_per_example_j"].to_numpy()
+    y = data_frame["f1"].to_numpy()
+    labels = data_frame["max_sequence_length"].astype(int).to_numpy()
+
+    # Create scatter plot with dashed lines to visualize frontier
+    _setup_plot()
+    plt.plot(x, y, linestyle="--", linewidth=1.0, alpha=0.35, zorder=1)
+    plt.scatter(x, y, s=36, alpha=1.0, zorder=2)
+
+    # Annotate data points with max sequence length for interpretability
+    for xi, yi, li in zip(x, y, labels):
+        plt.annotate(f"{li}", (xi, yi), textcoords="offset points", xytext=(5, 5),
+                     ha="left", va="bottom", fontsize=9, zorder=3)
+
+    # Implement label axes and title
+    plt.xlabel("Energy (J / Example)")
+    plt.ylabel("F1")
+    plt.title("Energy-F1 Pareto Frontier (Max Sequence Length in Tokens)")
+
+    # Set axes bounds for visual clarity
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
+
+    plt.tight_layout()
+    output_path = run_directory / "energy_f1_max_sequence_length.png"
+    plt.savefig(output_path)
+    plt.close()
+    return output_path
+
 # Plot energy-accuracy Pareto frontier for layers
 def plot_energy_accuracy_layers(pareto_csv_path: Path, run_directory: Path) -> Path:
     data_frame = pd.read_csv(pareto_csv_path)
@@ -205,6 +246,47 @@ def plot_energy_latency_layers(pareto_csv_path: Path, run_directory: Path) -> Pa
     plt.close()
     return output_path
 
+# Plot energy-F1 Pareto frontier for layers
+def plot_energy_f1_layers(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
+
+    # Sort points by energy for consistent frontier plotting
+    data_frame = data_frame.sort_values("energy_per_example_j", ascending = True)
+
+    # Handle case where F1 column is missing
+    if "f1" not in data_frame.columns:
+        raise ValueError("pareto.csv is missing required column 'f1' for F1 plotting.")
+
+    # Extract values and labels for plotting and annotation
+    x = data_frame["energy_per_example_j"].to_numpy()
+    y = data_frame["f1"].to_numpy()
+    labels = data_frame["num_encoder_layers"].astype(int).to_numpy()
+
+    # Create scatter plot with dashed lines to visualize frontier
+    _setup_plot()
+    plt.plot(x, y, linestyle="--", linewidth=1.0, alpha=0.35, zorder=1)
+    plt.scatter(x, y, s=36, alpha=1.0, zorder=2)
+
+    # Annotate data points with layer count for interpretability
+    for xi, yi, li in zip(x, y, labels):
+        plt.annotate(f"{li}", (xi, yi), textcoords="offset points", xytext=(5, 5),
+                     ha="left", va="bottom", fontsize=9, zorder=3)
+
+    # Implement label axes and title
+    plt.xlabel("Energy (J / Example)")
+    plt.ylabel("F1")
+    plt.title("Energy-F1 Pareto Frontier (Encoder Layers)")
+
+    # Set axes bounds for visual clarity
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
+
+    plt.tight_layout()
+    output_path = run_directory / "energy_f1_layers.png"
+    plt.savefig(output_path, dpi=200)
+    plt.close()
+    return output_path
+
 # Plot energy-accuracy Pareto frontier for precision
 def plot_energy_accuracy_precision(pareto_csv_path: Path, run_directory: Path) -> Path:
     data_frame = pd.read_csv(pareto_csv_path)
@@ -288,6 +370,47 @@ def plot_energy_latency_precision(pareto_csv_path: Path, run_directory: Path) ->
     plt.tight_layout()
     output_path = run_directory / "energy_latency_precision.png"
     plt.savefig(output_path, dpi=200)
+    plt.close()
+    return output_path
+
+# Plot energy-F1 Pareto frontier for precision
+def plot_energy_f1_precision(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
+
+    # Sort points by energy for consistent frontier plotting
+    data_frame = data_frame.sort_values("energy_per_example_j", ascending = True)
+
+    # Handle case where F1 column is missing
+    if "f1" not in data_frame.columns:
+        raise ValueError("pareto.csv is missing required column 'f1' for F1 plotting.")
+
+    # Extract values and labels for plotting and annotation
+    x = data_frame["energy_per_example_j"].to_numpy()
+    y = data_frame["f1"].to_numpy()
+    labels = data_frame["label"].astype(str).to_numpy()
+
+    # Create scatter plot with dashed lines to visualize frontier
+    _setup_plot()
+    plt.plot(x, y, linestyle="--", linewidth=1.0, alpha=0.35, zorder=1)
+    plt.scatter(x, y, s=36, alpha=1.0, zorder=2)
+
+    # Annotate data points with precision for interpretability
+    for xi, yi, li in zip(x, y, labels):
+        plt.annotate(li, (xi, yi), textcoords="offset points", xytext=(5, 5),
+                     ha="left", va="bottom", fontsize=9, zorder=3)
+
+    # Implement label axes and title
+    plt.xlabel("Energy (J / Example)")
+    plt.ylabel("F1")
+    plt.title("Energy-F1 Pareto Frontier (Inference Precision)")
+
+    # Set axes bounds for visual clarity
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
+
+    plt.tight_layout()
+    output_path = run_directory / "energy_f1_precision.png"
+    plt.savefig(output_path)
     plt.close()
     return output_path
 

@@ -9,11 +9,13 @@ from torch.utils.data import DataLoader
 from transformers import AutoModelForSequenceClassification
 from .measure import GPUPowerSampler, integrate_energy, save_power_trace_csv
 import contextlib
+import evaluate
 
 # Bundle inference benchmark outputs for logging
 @dataclass
 class InferenceBenchmarkResult:
     accuracy: float
+    f1: float
     average_latency_per_example_ms: float
     energy_per_example_j: float
     energy_per_correct_j: float
@@ -55,8 +57,8 @@ def benchmark_inference(
     sampler = GPUPowerSampler(gpu_index = gpu_index, sample_interval_s = power_sample_interval_s)
     sampler.start()
 
-    all_predictions = []
-    all_labels = []
+    all_predictions: List[int] = []
+    all_labels: List[int] = []
     start_time = time.perf_counter()
 
     # Measure fixed number of batches for comparison
@@ -64,16 +66,16 @@ def benchmark_inference(
     with torch.no_grad():
         for batch in loader:
             batch = {k: v.to(device) for k, v in batch.items()}
-        
+
             if device.type == "cuda":
                 torch.cuda.synchronize()
-            
+
             logits = model(**batch).logits
 
             if device.type == "cuda":
                 torch.cuda.synchronize()
-            
-            predictions = torch.argmax(logits, dim = -1).cpu().numpy().tolist()
+
+            predictions = torch.argmax(logits, dim = -1).detach().cpu().numpy().tolist()
             labels = batch["labels"].detach().cpu().numpy().tolist()
             all_predictions.extend(predictions)
             all_labels.extend(labels)
@@ -81,7 +83,7 @@ def benchmark_inference(
             measured_batches += 1
             if measured_batches >= num_inference_batches:
                 break
-    
+
     end_time = time.perf_counter()
     sampler.stop()
     samples = sampler.get_samples()
@@ -91,6 +93,10 @@ def benchmark_inference(
 
     # Compute accuracy
     accuracy = float(np.mean(np.array(all_predictions) == np.array(all_labels)))
+
+    # Compute F1
+    f1_metric = evaluate.load("f1")
+    f1 = float(f1_metric.compute(predictions = all_predictions, references = all_labels)["f1"])    
 
     # Compute latency per example
     total_examples = len(all_labels)
@@ -112,9 +118,10 @@ def benchmark_inference(
     with open(run_directory / "predictions.jsonl", "w", encoding = "utf-8") as f:
         for prediction, label in zip(all_predictions, all_labels):
             f.write(json.dumps({"prediction": int(prediction), "label": int(label)}) + "\n")
-    
+
     return InferenceBenchmarkResult(
         accuracy = accuracy,
+        f1 = f1,
         average_latency_per_example_ms = average_latency_per_example_ms,
         energy_per_example_j = energy_per_example_j,
         energy_per_correct_j = energy_per_correct_j,
@@ -193,6 +200,10 @@ def benchmark_inference_model(
     # Compute accuracy
     accuracy = float(np.mean(np.array(all_predictions) == np.array(all_labels)))
 
+    # Compute F1
+    f1_metric = evaluate.load("f1")
+    f1 = float(f1_metric.compute(predictions = all_predictions, references = all_labels)["f1"])
+
     # Compute latency per example
     total_examples = len(all_labels)
     total_time_s = end_time - start_time
@@ -216,6 +227,7 @@ def benchmark_inference_model(
     
     return InferenceBenchmarkResult(
         accuracy = accuracy,
+        f1 = f1,
         average_latency_per_example_ms = average_latency_per_example_ms,
         energy_per_example_j = energy_per_example_j,
         energy_per_correct_j = energy_per_correct_j,
@@ -229,27 +241,26 @@ def get_inference_autocast_context(precision: str, device_type: str):
     # No autocast necessary for CPU
     if device_type != "cuda":
         return contextlib.nullcontext()
-    
+
     # No autocast necessary for full precision (fp32)
     if precision == "fp32":
         return contextlib.nullcontext()
-    
+
     # Apply autocast for half precision (fp16)
     if precision == "fp16":
         return torch.autocast(device_type, dtype = torch.float16)
-    
+
     # Attempt to apply autocast for quarter precision (fp8) if supported
     if precision == "fp8":
         # Note: PyTorch FP8 autocast is only supported on certain builds
         try:
-            # Note: Whether torch.float8_e4m3fn or torch.float8_e5m2 is supported depends on build
             fp8_dtype = getattr(torch, "float8_e4m3fn", None)
             if fp8_dtype is not None:
                 return torch.autocast(device_type = "cuda", dtype = fp8_dtype)
         except Exception:
             pass
 
-        # Attempt to use NVIDIA Transformer Engine  fp8 autocast if available
+        # Attempt to use NVIDIA Transformer Engine fp8 autocast if available
         try:
             import transformer_engine.pytorch as te
             return te.fp8_autocast(enabled = True)
@@ -257,10 +268,10 @@ def get_inference_autocast_context(precision: str, device_type: str):
             raise RuntimeError(
                 "FP8 requested but neither torch FP8 autocast nor transformer-engine fp8_autocast is available."
             ) from e
-        
+
     raise ValueError(f"Unsupported precision '{precision}'. Expected fp32, fp16, bf16, or fp8.")
 
-# Run inference benchmark with with pre-loaded model and specified precision autocast context
+# Run inference benchmark with pre-loaded model and specified precision autocast context
 def benchmark_inference_model_with_precision(
         run_directory: Path,
         model: torch.nn.Module,
@@ -294,7 +305,7 @@ def benchmark_inference_model_with_precision(
     if device.type == "cuda":
         torch.cuda.synchronize()
 
-    # Start GPU power sampling.
+    # Start GPU power sampling
     sampler = GPUPowerSampler(gpu_index = gpu_index, sample_interval_s = power_sample_interval_s)
     sampler.start()
 
@@ -329,13 +340,17 @@ def benchmark_inference_model_with_precision(
     sampler.stop()
     samples = sampler.get_samples()
 
-    # Save power trace.
+    # Save power trace
     save_power_trace_csv(samples, run_directory / "power_trace.csv")
 
-    # Compute accuracy.
+    # Compute accuracy
     accuracy = float(np.mean(np.array(all_predictions) == np.array(all_labels)))
 
-    # Compute latency per example.
+    # Compute F1
+    f1_metric = evaluate.load("f1")
+    f1 = float(f1_metric.compute(predictions = all_predictions, references = all_labels)["f1"])
+
+    # Compute latency per example
     total_examples = len(all_labels)
     total_time_s = end_time - start_time
     average_latency_per_example_ms = (total_time_s / total_examples) * 1000.0
@@ -356,8 +371,9 @@ def benchmark_inference_model_with_precision(
 
     return InferenceBenchmarkResult(
         accuracy = accuracy,
+        f1 = f1,
         average_latency_per_example_ms = average_latency_per_example_ms,
         energy_per_example_j = energy_per_example_j,
         energy_per_correct_j = energy_per_correct_j,
         peak_gpu_memory_mb = peak_gpu_memory_mb,
-    )   
+    ) 

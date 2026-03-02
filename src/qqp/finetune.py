@@ -28,15 +28,20 @@ def finetune_baseline(
 
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels = 2)
     accuracy_metric = evaluate.load("accuracy")
+    f1_metric = evaluate.load("f1")
     num_update_steps_per_epoch = (len(train_dataset) + train_batch_size - 1) // train_batch_size
     total_training_steps = int(num_update_steps_per_epoch * num_train_epochs)
     warmup_steps = int(total_training_steps * warmup_ratio)
 
-    # Compute accuracy from logits and labels
+    # Compute accuracy and F1 from logits and labels
     def compute_metrics(evaluation_predictions):
         logits, labels = evaluation_predictions
         preds = np.argmax(logits, axis = -1)
-        return accuracy_metric.compute(predictions = preds, references = labels)
+
+        metrics = {}
+        metrics.update(accuracy_metric.compute(predictions = preds, references = labels))
+        metrics.update(f1_metric.compute(predictions = preds, references = labels))
+        return metrics
     
     # Configure Hugging Face Trainer
     training_args = TrainingArguments(
