@@ -16,7 +16,7 @@ def load_and_tokenize_qqp(model_name: str, max_sequence_length: int) -> Dict[str
             padding = "max_length",
         )
 
-    tokenized_datasets = raw_datasets.map(tokenize_batch, batche = True)
+    tokenized_datasets = raw_datasets.map(tokenize_batch, batched = True)
 
     # Remove raw text and idx columns
     columns_to_remove = []
