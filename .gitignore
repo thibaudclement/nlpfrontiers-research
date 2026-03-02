@@ -7,3 +7,4 @@ runs/
 .DS_Store
 runs/
 *.safetensors
+src/archive/

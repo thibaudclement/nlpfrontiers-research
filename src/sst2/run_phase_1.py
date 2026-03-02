@@ -4,6 +4,7 @@ from .data import load_and_tokenize_sst2
 from .evaluate_inference import benchmark_inference
 from .finetune import finetune_baseline
 from .pareto import save_pareto_table
+
 # Run Phase 1: Baseline Finetuning and Inference Benchmarking
 def run_phase_1() -> None:
     config = ExperimentConfig(run_name = "phase_1_baseline")

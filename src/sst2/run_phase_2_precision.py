@@ -54,7 +54,7 @@ def run_phase_2_precision_sweep() -> None:
     for precision in args.precisions:
         precision = precision.lower().strip()
         sub_run_directory = run_directory / f"precision_{precision}"
-        sub_run_directory.mkdir(parents=True, exist_ok=False)
+        sub_run_directory.mkdir(parents = True, exist_ok = False)
 
         try:
             model = AutoModelForSequenceClassification.from_pretrained(args.baseline_model_directory)

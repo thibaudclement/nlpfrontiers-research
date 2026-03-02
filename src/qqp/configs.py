@@ -6,12 +6,10 @@ from pathlib import Path
 # Store experiment parameters for reproducibility
 @dataclass(frozen = True)
 class ExperimentConfig:
-
     run_name: str
     model_name: str = "bert-base-uncased"
     dataset_name: str = "glue"
-    dataset_config: str = "sst2"
-
+    dataset_config: str = "qqp"
     max_sequence_length: int = 128
     train_batch_size: int = 32
     evaluation_batch_size: int = 64
@@ -19,10 +17,8 @@ class ExperimentConfig:
     num_train_epochs: int = 2
     weight_decay: float = 0.01
     warmup_ratio: float = 0.06
-
     seed: int = 42
     use_fp16: bool = False
-
     num_inference_batches: int = 200
     power_sample_interval_s: float = 0.05
 

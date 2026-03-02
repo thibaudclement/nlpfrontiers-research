@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 # Save Pareto table for comparison
 def save_pareto_table(rows: List[Dict[str, object]], run_directory: Path) -> Path:
@@ -9,6 +10,19 @@ def save_pareto_table(rows: List[Dict[str, object]], run_directory: Path) -> Pat
     output_path = run_directory / "pareto.csv"
     data_frame.to_csv(output_path, index = False)
     return output_path
+
+# Compute axes bounds automatically with padding
+def _auto_limits(values: np.ndarray, pad_frac: float = 0.08, min_pad: float = 1e-6) -> Tuple[float, float]:
+    vmin = float(np.nanmin(values))
+    vmax = float(np.nanmax(values))
+    span = max(vmax - vmin, min_pad)
+    pad = span * pad_frac
+    return vmin - pad, vmax + pad
+
+# Set up consistent plot styling for all Pareto frontier visualizations
+def _setup_plot():
+    plt.figure()
+    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
 
 # Plot energy-accuracy Pareto frontier for max sequence length
 def plot_energy_accuracy_max_sequence_length(pareto_csv_path: Path, run_directory: Path) -> Path:
@@ -23,8 +37,7 @@ def plot_energy_accuracy_max_sequence_length(pareto_csv_path: Path, run_director
     labels = data_frame["max_sequence_length"].astype(int).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
-    plt.figure()
-    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    _setup_plot()
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
@@ -47,11 +60,10 @@ def plot_energy_accuracy_max_sequence_length(pareto_csv_path: Path, run_director
     plt.title("Energy-Accuracy Pareto Frontier (Max Sequence Length in Tokens)")
     
     # Set axes bounds for visual clarity
-    plt.ylim(0.82, 0.94)
-    plt.xlim(0.00, 0.25)
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
 
     plt.tight_layout()
-
     output_path = run_directory / "energy_accuracy_max_sequence_length.png"
     plt.savefig(output_path)
     plt.close()
@@ -70,8 +82,7 @@ def plot_energy_latency_max_sequence_length(pareto_csv_path: Path, run_directory
     labels = data_frame["max_sequence_length"].astype(int).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
-    plt.figure()
-    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    _setup_plot()
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
@@ -94,11 +105,10 @@ def plot_energy_latency_max_sequence_length(pareto_csv_path: Path, run_directory
     plt.title("Energy-Latency Pareto Frontier (Max Sequence Length in Tokens)")
     
     # Set axes bounds for visual clarity
-    plt.ylim(0.00, 4.00)
-    plt.xlim(0.00, 0.25)
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
 
     plt.tight_layout()
-
     output_path = run_directory / "energy_latency_max_sequence_length.png"
     plt.savefig(output_path)
     plt.close()
@@ -117,8 +127,7 @@ def plot_energy_accuracy_layers(pareto_csv_path: Path, run_directory: Path) -> P
     labels = data_frame["num_encoder_layers"].astype(int).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
-    plt.figure()
-    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    _setup_plot()
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
@@ -141,11 +150,11 @@ def plot_energy_accuracy_layers(pareto_csv_path: Path, run_directory: Path) -> P
     plt.title("Energy-Accuracy Pareto Frontier (Encoder Layers)")
     
     # Set axes bounds for visual clarity
-    plt.ylim(0.40, 1.00)
-    plt.xlim(0.00, 0.25)
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
+
 
     plt.tight_layout()
-
     output_path = run_directory / "energy_accuracy_layers.png"
     plt.savefig(output_path, dpi=200)
     plt.close()
@@ -164,8 +173,7 @@ def plot_energy_latency_layers(pareto_csv_path: Path, run_directory: Path) -> Pa
     labels = data_frame["num_encoder_layers"].astype(int).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
-    plt.figure()
-    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    _setup_plot()
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
@@ -188,11 +196,10 @@ def plot_energy_latency_layers(pareto_csv_path: Path, run_directory: Path) -> Pa
     plt.title("Energy-Latency Pareto Frontier (Encoder Layers)")
     
     # Set axes bounds for visual clarity
-    plt.ylim(0.0, 3.5)
-    plt.xlim(0.0, 0.25)
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
 
     plt.tight_layout()
-
     output_path = run_directory / "energy_latency_layers.png"
     plt.savefig(output_path, dpi=200)
     plt.close()
@@ -209,8 +216,7 @@ def plot_energy_accuracy_precision(pareto_csv_path: Path, run_directory: Path) -
     labels = data_frame["label"].astype(str).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
-    plt.figure()
-    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    _setup_plot()
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
@@ -233,8 +239,8 @@ def plot_energy_accuracy_precision(pareto_csv_path: Path, run_directory: Path) -
     plt.title("Energy-Accuracy Pareto Frontier (Inference Precision)")
 
     # Set axes bounds for visual clarity
-    plt.ylim(0.92, 0.94)
-    plt.xlim(0.025, 0.250)
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
 
     plt.tight_layout()
     output_path = run_directory / "energy_accuracy_precision.png"
@@ -253,8 +259,7 @@ def plot_energy_latency_precision(pareto_csv_path: Path, run_directory: Path) ->
     labels = data_frame["label"].astype(str).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
-    plt.figure()
-    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    _setup_plot()
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, zorder = 2)
 
@@ -277,8 +282,8 @@ def plot_energy_latency_precision(pareto_csv_path: Path, run_directory: Path) ->
     plt.title("Energy-Latency Pareto Frontier (Inference Precision)")
 
     # Set axes bounds for visual clarity
-    plt.ylim(0.0, 3.5)
-    plt.xlim(0.025, 0.250)
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
 
     plt.tight_layout()
     output_path = run_directory / "energy_latency_precision.png"
@@ -302,8 +307,7 @@ def plot_energy_accuracy_combination(pareto_csv_path: Path, run_directory: Path)
     labels = fp16_frame["max_sequence_length"].astype(int).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
-    plt.figure()
-    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    _setup_plot()
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, color = "C0", zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, color = "C0", zorder = 2)
 
@@ -329,8 +333,8 @@ def plot_energy_accuracy_combination(pareto_csv_path: Path, run_directory: Path)
     )
 
     # Set axes bounds for visual clarity
-    plt.ylim(0.82, 0.94)
-    plt.xlim(0.00, 0.05)
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
 
     plt.tight_layout()
     output_path = run_directory / "energy_accuracy_combination.png"
@@ -352,8 +356,7 @@ def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) 
     labels = fp16_frame["max_sequence_length"].astype(int).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
-    plt.figure()
-    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    _setup_plot()
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, color = "C0", zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, color = "C0", zorder = 2)
 
@@ -383,8 +386,8 @@ def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) 
     )
 
     # Set axes bounds for visual clarity
-    plt.ylim(0.1, 0.9)
-    plt.xlim(0.00, 0.05)
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
 
     plt.tight_layout()
     output_path = run_directory / "energy_latency_combination.png"

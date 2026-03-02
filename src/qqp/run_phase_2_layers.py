@@ -4,7 +4,7 @@ from typing import Dict, List
 import torch
 from transformers import AutoModelForSequenceClassification
 from .configs import create_run_directory
-from .data import load_and_tokenize_sst2_validation
+from .data import load_and_tokenize_qqp_validation
 from .evaluate_inference import benchmark_inference_model
 from .pareto import save_pareto_table, plot_energy_accuracy_layers, plot_energy_latency_layers
 
@@ -39,7 +39,7 @@ def run_phase_2_layers_sweep() -> None:
 
     # Create run directory for outputs
     run_name = "phase_2_layers_sweep"
-    run_directory = create_run_directory(base_directory = "runs", run_name = run_name)
+    run_directory = create_run_directory(base_directory="runs", run_name=run_name)
 
     # Persist sweep configuration for reproducibility
     sweep_configuration = {
@@ -51,16 +51,16 @@ def run_phase_2_layers_sweep() -> None:
         "num_inference_batches": args.num_inference_batches,
         "power_sample_interval_s": args.power_sample_interval_s,
         "gpu_index": args.gpu_index,
-        "dataset": "glue/sst2",
-        "model_architecture": "bert-base-uncased finetuned classifier"
+        "dataset": "glue/qqp",
+        "model_architecture": "bert-base-uncased finetuned classifier",
     }
-    with open(run_directory / "config.json", "w", encoding = "utf-8") as f:
-        json.dump(sweep_configuration, f, indent = 4, sort_keys = True)
+    with open(run_directory / "config.json", "w", encoding="utf-8") as f:
+        json.dump(sweep_configuration, f, indent=4, sort_keys=True)
 
     # Tokenize validation once at fixed max sequence length
-    tokenized_validation = load_and_tokenize_sst2_validation(
-        model_name = "bert-base-uncased",
-        max_sequence_length = args.max_sequence_length,
+    tokenized_validation = load_and_tokenize_qqp_validation(
+        model_name="bert-base-uncased",
+        max_sequence_length=args.max_sequence_length,
     )
 
     pareto_rows: List[Dict[str, object]] = []
@@ -72,7 +72,7 @@ def run_phase_2_layers_sweep() -> None:
 
         reduced_model = load_bert_with_reduced_layers(
             model_directory = args.baseline_model_directory,
-            num_encoder_layers = num_encoder_layers
+            num_encoder_layers = num_encoder_layers,
         )
 
         inference_output = benchmark_inference_model(
