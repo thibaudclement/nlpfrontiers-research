@@ -3,7 +3,7 @@ from .configs import ExperimentConfig, create_run_directory, save_config
 from .data import load_and_tokenize_sst2
 from .evaluate_inference import benchmark_inference
 from .finetune import finetune_baseline
-from .pareto import save_pareto_table, plot_energy_accuracy_precision
+from .pareto import save_pareto_table
 # Run Phase 1: Baseline Finetuning and Inference Benchmarking
 def run_phase_1() -> None:
     config = ExperimentConfig(run_name = "phase_1_baseline")
@@ -64,8 +64,7 @@ def run_phase_1() -> None:
         "peak_gpu_memory_mb": inference_output.peak_gpu_memory_mb
     }]
 
-    pareto_csv_path = save_pareto_table(pareto_rows, run_directory)
-    _ = plot_energy_accuracy_precision(pareto_csv_path, run_directory)
+    save_pareto_table(pareto_rows, run_directory)
 
     print(f"Phase 1 complete. Results saved to {run_directory}")
 
