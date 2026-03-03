@@ -1,11 +1,11 @@
 {
-    "best_model_directory": "runs/2026-03-02_21-42-00_phase_1_baseline/best_model",
+    "best_model_directory": "runs/2026-03-03_13-44-22_phase_1_baseline/best_model",
     "inference_benchmark_metrics": {
-        "accuracy": 0.910390625,
-        "average_latency_per_example_ms": 3.4115268182031855,
-        "energy_per_correct_j": 0.26963931104195155,
-        "energy_per_example_j": 0.24547710090405167,
-        "f1": 0.8781472431743333,
+        "accuracy": 0.90972050457581,
+        "average_latency_per_example_ms": 3.397597891021705,
+        "energy_per_correct_j": 0.26883887224911784,
+        "energy_per_example_j": 0.24456823451205922,
+        "f1": 0.8788904373216537,
         "peak_gpu_memory_mb": 720.1142578125
     },
     "trainer_evaluation_metrics": {
@@ -13,8 +13,8 @@
         "eval_accuracy": 0.90972050457581,
         "eval_f1": 0.8788904373216537,
         "eval_loss": 0.23688630759716034,
-        "eval_runtime": 138.249,
-        "eval_samples_per_second": 292.443,
-        "eval_steps_per_second": 4.571
+        "eval_runtime": 137.628,
+        "eval_samples_per_second": 293.763,
+        "eval_steps_per_second": 4.592
     }
 }

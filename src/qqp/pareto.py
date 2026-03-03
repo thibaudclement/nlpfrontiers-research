@@ -481,8 +481,7 @@ def plot_energy_f1_combination(pareto_csv_path: Path, run_directory: Path) -> Pa
     labels = fp16_frame["max_sequence_length"].astype(int).to_numpy()
 
     # Create scatter plot with dashed lines to visualize frontier
-    plt.figure()
-    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    _setup_plot()
     plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, color = "C0", zorder = 1)
     plt.scatter(x, y, s = 36, alpha = 1.0, color = "C0", zorder = 2)
 
@@ -507,9 +506,9 @@ def plot_energy_f1_combination(pareto_csv_path: Path, run_directory: Path) -> Pa
         "(FP16 and Max Sequence Length in Tokens)"
     )
 
-    # Set axes bounds for visual clarity (consistent with combination x-range)
-    plt.ylim(0.60, 0.90)
-    plt.xlim(0.00, 0.05)
+    # Use automatic limits for better centering
+    plt.xlim(*_auto_limits(x))
+    plt.ylim(*_auto_limits(y))
 
     plt.tight_layout()
     output_path = run_directory / "energy_f1_combination.png"

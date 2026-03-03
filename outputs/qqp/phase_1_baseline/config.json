@@ -5,7 +5,7 @@
     "learning_rate": 3e-05,
     "max_sequence_length": 128,
     "model_name": "bert-base-uncased",
-    "num_inference_batches": 200,
+    "num_inference_batches": 632,
     "num_train_epochs": 2,
     "power_sample_interval_s": 0.05,
     "run_name": "phase_1_baseline",
