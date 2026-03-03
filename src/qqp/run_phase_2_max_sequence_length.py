@@ -17,7 +17,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--baseline_model_directory", type = str, required = True)
     parser.add_argument("--sequence_lengths", type = int, nargs = "+", default = [128, 96, 64, 48, 40, 32, 24, 16])
     parser.add_argument("--evaluation_batch_size", type = int, default = 64)
-    parser.add_argument("--num_inference_batches", type = int, default = 200)
+    parser.add_argument("--num_inference_batches", type = int, default = 632)
     parser.add_argument("--power_sample_interval_s", type = float, default = 0.05)
     parser.add_argument("--gpu_index", type = int, default = 0)
     return parser.parse_args()

@@ -20,7 +20,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--num_layers", type = int, nargs = "+", default = [12, 10, 8, 6, 4, 2])
     parser.add_argument("--max_sequence_length", type = int, default = 128)
     parser.add_argument("--evaluation_batch_size", type = int, default = 64)
-    parser.add_argument("--num_inference_batches", type = int, default = 200)
+    parser.add_argument("--num_inference_batches", type = int, default = 632)
     parser.add_argument("--power_sample_interval_s", type = float, default = 0.05)
     parser.add_argument("--gpu_index", type = int, default = 0)
     return parser.parse_args()

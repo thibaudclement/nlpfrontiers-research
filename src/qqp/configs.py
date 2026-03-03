@@ -19,7 +19,7 @@ class ExperimentConfig:
     warmup_ratio: float = 0.06
     seed: int = 42
     use_fp16: bool = False
-    num_inference_batches: int = 200
+    num_inference_batches: int = 632
     power_sample_interval_s: float = 0.05
 
 # Create run directory for outputs

@@ -19,7 +19,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--precisions", type = str, nargs = "+", default = ["fp32", "fp16", "fp8"])
     parser.add_argument("--max_sequence_length", type = int, default = 128)
     parser.add_argument("--evaluation_batch_size", type = int, default = 64)
-    parser.add_argument("--num_inference_batches", type = int, default = 200)
+    parser.add_argument("--num_inference_batches", type = int, default = 632)
     parser.add_argument("--power_sample_interval_s", type = float, default = 0.05)
     parser.add_argument("--gpu_index", type = int, default = 0)
     parser.add_argument("--skip_failed_precisions", action = "store_true")
