@@ -11,7 +11,7 @@ def run_phase_1() -> None:
     run_directory = create_run_directory(base_directory = "runs", run_name = config.run_name)
     save_config(config, run_directory)
 
-    data = load_and_tokenize_squad_v1(
+    data = load_and_tokenize_squad(
         model_name = config.model_name,
         max_sequence_length = config.max_sequence_length,
         doc_stride = config.doc_stride,
