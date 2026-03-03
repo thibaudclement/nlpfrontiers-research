@@ -465,6 +465,58 @@ def plot_energy_accuracy_combination(pareto_csv_path: Path, run_directory: Path)
     plt.close()
     return output_path
 
+# Plot energy-F1 Pareto frontier for precision and sequence-length combination
+def plot_energy_f1_combination(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
+
+    # Plot only FP16 data points
+    fp16_frame = data_frame[data_frame["precision"] == "fp16"].copy()
+
+    # Sort points by energy for consistent frontier plotting
+    fp16_frame = fp16_frame.sort_values("energy_per_example_j", ascending = True)
+
+    # Extract values and labels for plotting and annotation
+    x = fp16_frame["energy_per_example_j"].to_numpy()
+    y = fp16_frame["f1"].to_numpy()
+    labels = fp16_frame["max_sequence_length"].astype(int).to_numpy()
+
+    # Create scatter plot with dashed lines to visualize frontier
+    plt.figure()
+    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, color = "C0", zorder = 1)
+    plt.scatter(x, y, s = 36, alpha = 1.0, color = "C0", zorder = 2)
+
+    # Annotate data points with max sequence length for interpretability
+    for xi, yi, li in zip(x, y, labels):
+        plt.annotate(
+            f"{li}",
+            (xi, yi),
+            textcoords = "offset points",
+            xytext = (4, 4),
+            ha = "left",
+            va = "bottom",
+            fontsize = 9,
+            zorder = 3,
+        )
+
+    # Implement label axes and title
+    plt.xlabel("Energy (J / Example)")
+    plt.ylabel("F1")
+    plt.title(
+        "Energy-F1 Pareto Frontier\n"
+        "(FP16 and Max Sequence Length in Tokens)"
+    )
+
+    # Set axes bounds for visual clarity (consistent with combination x-range)
+    plt.ylim(0.60, 0.90)
+    plt.xlim(0.00, 0.05)
+
+    plt.tight_layout()
+    output_path = run_directory / "energy_f1_combination.png"
+    plt.savefig(output_path)
+    plt.close()
+    return output_path
+
 # Plot energy-latency Pareto frontier for precision and sequence-length combination
 def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) -> Path:
     data_frame = pd.read_csv(pareto_csv_path)
@@ -514,6 +566,58 @@ def plot_energy_latency_combination(pareto_csv_path: Path, run_directory: Path) 
 
     plt.tight_layout()
     output_path = run_directory / "energy_latency_combination.png"
+    plt.savefig(output_path)
+    plt.close()
+    return output_path
+
+# Plot energy-F1 Pareto frontier for precision and sequence-length combination
+def plot_energy_f1_combination(pareto_csv_path: Path, run_directory: Path) -> Path:
+    data_frame = pd.read_csv(pareto_csv_path)
+
+    # Plot only FP16 data points
+    fp16_frame = data_frame[data_frame["precision"] == "fp16"].copy()
+
+    # Sort points by energy for consistent frontier plotting
+    fp16_frame = fp16_frame.sort_values("energy_per_example_j", ascending = True)
+
+    # Extract values and labels for plotting and annotation
+    x = fp16_frame["energy_per_example_j"].to_numpy()
+    y = fp16_frame["f1"].to_numpy()
+    labels = fp16_frame["max_sequence_length"].astype(int).to_numpy()
+
+    # Create scatter plot with dashed lines to visualize frontier
+    plt.figure()
+    plt.grid(True, which = "both", linestyle = ":", linewidth = 0.6, alpha = 0.35)
+    plt.plot(x, y, linestyle = "--", linewidth = 1.0, alpha = 0.35, color = "C0", zorder = 1)
+    plt.scatter(x, y, s = 36, alpha = 1.0, color = "C0", zorder = 2)
+
+    # Annotate data points with max sequence length for interpretability
+    for xi, yi, li in zip(x, y, labels):
+        plt.annotate(
+            f"{li}",
+            (xi, yi),
+            textcoords = "offset points",
+            xytext = (4, 4),
+            ha = "left",
+            va = "bottom",
+            fontsize = 9,
+            zorder = 3,
+        )
+
+    # Implement label axes and title
+    plt.xlabel("Energy (J / Example)")
+    plt.ylabel("F1")
+    plt.title(
+        "Energy-F1 Pareto Frontier\n"
+        "(FP16 and Max Sequence Length in Tokens)"
+    )
+
+    # Set axes bounds for visual clarity (consistent with combination x-range)
+    plt.ylim(0.60, 0.90)
+    plt.xlim(0.00, 0.05)
+
+    plt.tight_layout()
+    output_path = run_directory / "energy_f1_combination.png"
     plt.savefig(output_path)
     plt.close()
     return output_path
