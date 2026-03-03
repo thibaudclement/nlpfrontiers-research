@@ -19,7 +19,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--max_sequence_length", type = int, default = 384)
     parser.add_argument("--doc_stride", type = int, default = 128)
     parser.add_argument("--evaluation_batch_size", type = int, default = 16)
-    parser.add_argument("--num_inference_batches", type = int, default = 200)
+    parser.add_argument("--num_inference_batches", type = int, default = 100000)
     parser.add_argument("--power_sample_interval_s", type = float, default = 0.05)
     parser.add_argument("--n_best_size", type = int, default = 20)
     parser.add_argument("--max_answer_length", type = int, default = 30)
