@@ -74,9 +74,9 @@ def finetune_baseline(
     trainer.train()
     evaluation_metrics = trainer.evaluate()
 
-    # Save the best model for inference benchmarking (with canonical keys)
+    # Save the best model for inference benchmarking
     save_model_directory = run_directory / "best_model"
-    trainer.save_model(str(save_model_directory), safe_serialization = False)
+    trainer.save_model(str(save_model_directory))
 
     return {
         "evaluation_metrics": evaluation_metrics,
