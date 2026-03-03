@@ -1,12 +1,10 @@
 import argparse
 import json
 from pathlib import Path
-
 from .configs import create_run_directory
-from .data import load_and_tokenize_squad_v1_validation
+from .data import load_and_tokenize_squad_validation
 from .evaluate_inference import benchmark_inference_qa
 from .pareto import save_pareto_table
-
 
 # Parse CLI arguments for running inference-only baseline evaluation
 def parse_arguments() -> argparse.Namespace:
@@ -24,7 +22,6 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--max_answer_length", type=int, default=30)
     parser.add_argument("--gpu_index", type=int, default=0)
     return parser.parse_args()
-
 
 # Run inference-only baseline evaluation for a pre-trained QA checkpoint
 def run_inference_only_baseline() -> None:
@@ -51,7 +48,7 @@ def run_inference_only_baseline() -> None:
         json.dump(config, f, indent=4, sort_keys=True)
 
     # Load validation features + examples
-    data = load_and_tokenize_squad_v1_validation(
+    data = load_and_tokenize_squad_validation(
         model_name="bert-base-uncased",
         max_sequence_length=args.max_sequence_length,
         doc_stride=args.doc_stride,
@@ -100,7 +97,6 @@ def run_inference_only_baseline() -> None:
     save_pareto_table(pareto_rows, run_directory)
 
     print("Inference-only baseline complete. Results saved to", run_directory)
-
 
 if __name__ == "__main__":
     run_inference_only_baseline()
