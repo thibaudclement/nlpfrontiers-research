@@ -296,7 +296,7 @@ In Phase 2, we want to evaluate a set of efficiency techniques that target diffe
 You may evaluate max sequence length reduction (from `128` to `16`) with the following command:
 
 ```
-python -m src.sst2.run_phase_2_max_sequence_length \
+python -m src.qqp.run_phase_2_max_sequence_length \
   --baseline_model_directory runs/<RUN_ID>/best_model \
   --sequence_lengths 128 96 64 48 40 32 24 16
 ```
