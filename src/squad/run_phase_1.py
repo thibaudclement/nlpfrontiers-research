@@ -1,6 +1,6 @@
 import json
 from .configs import ExperimentConfig, create_run_directory, save_config
-from .data import load_and_tokenize_squad_v1
+from .data import load_and_tokenize_squad
 from .evaluate_inference import benchmark_inference_qa
 from .finetune import finetune_baseline
 from .pareto import save_pareto_table

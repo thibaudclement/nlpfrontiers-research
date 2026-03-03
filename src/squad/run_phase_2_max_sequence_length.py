@@ -2,7 +2,7 @@ import argparse
 import json
 from typing import Dict, List
 from .configs import create_run_directory
-from .data import load_and_tokenize_squad_v1_validation
+from .data import load_and_tokenize_squad_validation
 from .evaluate_inference import benchmark_inference_qa
 from .pareto import (
     save_pareto_table,
@@ -52,7 +52,7 @@ def run_phase_2_sequence_length_sweep() -> None:
     pareto_rows: List[Dict[str, object]] = []
 
     for max_sequence_length in args.sequence_lengths:
-        data = load_and_tokenize_squad_v1_validation(
+        data = load_and_tokenize_squad_validation(
             model_name = "bert-base-uncased",
             max_sequence_length = max_sequence_length,
             doc_stride = args.doc_stride,

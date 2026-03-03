@@ -4,7 +4,7 @@ from typing import Dict, List
 import torch
 from transformers import AutoModelForQuestionAnswering
 from .configs import create_run_directory
-from .data import load_and_tokenize_squad_v1_validation
+from .data import load_and_tokenize_squad_validation
 from .evaluate_inference import benchmark_inference_qa
 from .pareto import (
     save_pareto_table,
@@ -64,7 +64,7 @@ def run_phase_2_layers_sweep() -> None:
     with open(run_directory / "config.json", "w", encoding = "utf-8") as f:
         json.dump(sweep_configuration, f, indent = 4, sort_keys = True)
 
-    data = load_and_tokenize_squad_v1_validation(
+    data = load_and_tokenize_squad_validation(
         model_name = "bert-base-uncased",
         max_sequence_length = args.max_sequence_length,
         doc_stride = args.doc_stride,
