@@ -50,7 +50,9 @@ echo 'export HUGGINGFACE_HUB_TOKEN=<YOUR_HF_ACCESS_TOKEN>' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-## Phase 1: Establish Baseline
+## SST-2
+
+### Phase 1: Establish Baseline
 
 We fine-tune `bert-base-uncased` on SST-2 (GLUE) and measure:
 
@@ -82,7 +84,7 @@ We obtained the following results:
 You may replicate this baseline by running Phase 1 on your VM instance with the following command:
 
 ```
-python -m src.run_phase_1
+python -m src.sst2.run_phase_1
 ```
 
 Once your baseline run completes, all outputs are stored under:
@@ -96,7 +98,6 @@ This directory will include:
 - `metrics.json`
 - `power_trace.csv`
 - `pareto.csv`
-- `pareto_frontier.png`
 - `best_model/`
 
 You may download that output to your local machine as follows:
@@ -110,16 +111,16 @@ gcloud compute scp --recurse \
 
 This baseline configuration is frozen and used for all subsequent efficiency comparisons in Phase 2 to ensure apples-to-apples analysis.
 
-## Phase 2: Run Experiments
+### Phase 2: Run Experiments
 
 In Phase 2, we want to evaluate a set of efficiency techniques that target different sources of redundancy: (i) max sequence length reduction, (ii) layer reduction, and (iii) quantization.
 
-### Max Sequence Length
+#### Max Sequence Length
 
 You may evaluate max sequence length reduction (from `128` to `16`) with the following command:
 
 ```
-python -m src.run_phase_2_max_sequence_length \
+python -m src.sst2.run_phase_2_max_sequence_length \
   --baseline_model_directory runs/<RUN_ID>/best_model \
   --sequence_lengths 128 96 64 48 40 32 24 16
 ```
@@ -140,12 +141,12 @@ This will include:
 - `energy_accuracy_max_sequence_length.png`
 - `energy_latency_max_sequence_length.png`
 
-### Layers
+#### Layers
 
 You may evaluate layers reduction (from `12` to `2`) with the following command:
 
 ```
-python -m src.run_phase_2_layers \
+python -m src.sst2.run_phase_2_layers \
   --baseline_model_directory runs/<RUN_ID>/best_model \
   --num_layers 12 10 8 6 4 2 \
   --max_sequence_length 128
@@ -167,12 +168,12 @@ This will include:
 - `energy_accuracy_layers.png`
 - `energy_latency_layers.png`
 
-### Precision
+#### Precision
 
 You may evaluate precision reduction (from `32` to `16`) with the following command:
 
 ```
-python -m src.run_phase_2_precision \
+python -m src.sst2.run_phase_2_precision \
   --baseline_model_directory runs/<RUN_ID>/best_model \
   --precisions fp32 fp16 fp8 \
   --max_sequence_length 128 \
@@ -195,12 +196,12 @@ This will include:
 - `energy_accuracy_precision.png`
 - `energy_latency_precision.png`
 
-### Precision and Max Sequence Length Combination
+#### Precision and Max Sequence Length Combination
 
 You may evaluate the combination of precision reduction (from `32` to `16`) and max sequence length reduction (from `128` to `16`) with the following command:
 
 ```
-python -m src.run_phase_2_combination \
+python -m src.sst2.run_phase_2_combination \
   --baseline_model_directory runs/<RUN_ID> \
   --precisions fp32 fp16 \
   --sequence_lengths 128 96 64 48 40 32 24 16 \
@@ -222,4 +223,184 @@ This will include:
 
 - `pareto.csv`
 - `energy_accuracy_combination.png`
+- `energy_latency_combination.png`
+
+## QQP
+
+### Phase 1: Establish Baseline
+
+We fine-tune `bert-base-uncased` on QQP (GLUE) and measure:
+
+- Validation accuracy
+- F1
+- Inference latency (ms per example)
+- Energy consumption (J per example) via NVML power sampling
+- Peak GPU memory usage
+
+Specifically, we established a controlled baseline using:
+
+- Model: `bert-base-uncased`
+- Dataset: `QQP` (`GLUE`)
+- Max sequence length: `128`
+- Batch size: `32`
+- Epochs: `2`
+- Learning rate: `3e-5`
+- Weight decay: `0.01`
+- Warmup ratio: `0.06`
+- Seed: `42`
+
+We obtained the following results:
+
+- Validation accuracy: `TBD`
+- Latency: `TBD ms / example`
+- Energy: `TBD J / example`
+- Energy per correct prediction: `~TBD J`
+- Peak GPU memory: `~TBD MB`
+
+You may replicate this baseline by running Phase 1 on your VM instance with the following command:
+
+```
+python -m src.qqp.run_phase_1
+```
+
+Once your baseline run completes, all outputs are stored under:
+
+```
+runs/<timestamp>_phase_1_baseline/
+```
+
+This directory will include:
+
+- `metrics.json`
+- `power_trace.csv`
+- `pareto.csv`
+- `best_model/`
+
+You may download that output to your local machine as follows:
+
+```
+gcloud compute scp --recurse \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
+  ./outputs \
+  --zone <ZONE>
+```
+
+This baseline configuration is frozen and used for all subsequent efficiency comparisons in Phase 2 to ensure apples-to-apples analysis.
+
+### Phase 2: Run Experiments
+
+In Phase 2, we want to evaluate a set of efficiency techniques that target different sources of redundancy: (i) max sequence length reduction, (ii) layer reduction, and (iii) quantization.
+
+#### Max Sequence Length
+
+You may evaluate max sequence length reduction (from `128` to `16`) with the following command:
+
+```
+python -m src.sst2.run_phase_2_max_sequence_length \
+  --baseline_model_directory runs/<RUN_ID>/best_model \
+  --sequence_lengths 128 96 64 48 40 32 24 16
+```
+
+Then, you may download that output to your local machine as follows:
+
+```
+gcloud compute scp --recurse \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
+  ./phase_2_max_sequence_length_sweep \
+  --zone <ZONE> \
+  --project <PROJECT_ID>
+```
+
+This will include:
+
+- `pareto.csv`
+- `energy_accuracy_max_sequence_length.png`
+- `energy_f1_max_sequence_length.png`
+- `energy_latency_max_sequence_length.png`
+
+#### Layers
+
+You may evaluate layers reduction (from `12` to `2`) with the following command:
+
+```
+python -m src.qqp.run_phase_2_layers \
+  --baseline_model_directory runs/<RUN_ID>/best_model \
+  --num_layers 12 10 8 6 4 2 \
+  --max_sequence_length 128
+```
+
+Then, you may download that output to your local machine as follows:
+
+```
+gcloud compute scp --recurse \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
+  ./phase_2_layers_sweep \
+  --zone <ZONE> \
+  --project <PROJECT_ID>
+```
+
+This will include:
+
+- `pareto.csv`
+- `energy_accuracy_layers.png`
+- `energy_f1_layers.png`
+- `energy_latency_layers.png`
+
+#### Precision
+
+You may evaluate precision reduction (from `32` to `16`) with the following command:
+
+```
+python -m src.qqp.run_phase_2_precision \
+  --baseline_model_directory runs/<RUN_ID>/best_model \
+  --precisions fp32 fp16 fp8 \
+  --max_sequence_length 128 \
+  --skip_failed_precisions
+```
+
+Then, you may download that output to your local machine as follows:
+
+```
+gcloud compute scp --recurse \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
+  ./phase_2_precision_sweep \
+  --zone <ZONE> \
+  --project <PROJECT_ID>
+```
+
+This will include:
+
+- `pareto.csv`
+- `energy_accuracy_precision.png`
+- `energy_f1_precision.png`
+- `energy_latency_precision.png`
+
+#### Precision and Max Sequence Length Combination
+
+You may evaluate the combination of precision reduction (from `32` to `16`) and max sequence length reduction (from `128` to `16`) with the following command:
+
+```
+python -m src.qqp.run_phase_2_combination \
+  --baseline_model_directory runs/<RUN_ID> \
+  --precisions fp32 fp16 \
+  --sequence_lengths 128 96 64 48 40 32 24 16 \
+  --evaluation_batch_size 64 \
+  --num_inference_batches 200
+```
+
+Then, you may download that output to your local machine as follows:
+
+```
+gcloud compute scp --recurse \
+  <VM_NAME>:~/nlpfrontiers-research/runs/<RUN_ID> \
+  ./phase_2_combination_sweep \
+  --zone <ZONE> \
+  --project <PROJECT_ID>
+```
+
+This will include:
+
+- `pareto.csv`
+- `energy_accuracy_combination.png`
+- `energy_f1_combination.png`
 - `energy_latency_combination.png`
