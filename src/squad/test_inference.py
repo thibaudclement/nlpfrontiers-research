@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 
 from .configs import create_run_directory
-from .data import load_and_tokenize_squad_v1_validation
+from .data import load_and_tokenize_squad_validation
 from .evaluate_inference import benchmark_inference_qa
 
 
@@ -28,7 +28,7 @@ def run_smoke_test_inference() -> None:
     run_directory = create_run_directory(base_directory = "runs", run_name = "squad_smoke_test_inference")
 
     # Load and tokenize SQuAD validation features for QA inference
-    data = load_and_tokenize_squad_v1_validation(
+    data = load_and_tokenize_squad_validation(
         model_name = "bert-base-uncased",
         max_sequence_length = args.max_sequence_length,
         doc_stride = args.doc_stride,
