@@ -45,6 +45,7 @@ def run_phase_2_sequence_length_sweep() -> None:
         "gpu_index": args.gpu_index,
         "dataset": "squad",
         "model_architecture": "bert-base-uncased finetuned QA",
+        "note": "For small max_sequence_length values, doc_stride is clamped per configuration to avoid tokenizer errors.",
     }
     with open(run_directory / "config.json", "w", encoding = "utf-8") as f:
         json.dump(sweep_configuration, f, indent = 4, sort_keys = True)
@@ -52,10 +53,15 @@ def run_phase_2_sequence_length_sweep() -> None:
     pareto_rows: List[Dict[str, object]] = []
 
     for max_sequence_length in args.sequence_lengths:
+        # Clamp doc_stride to remain valid for smaller max_sequence_length values
+        # Tokenizers requires stride < effective max_len, which shrinks with question length + special tokens
+        doc_stride_for_length = min(args.doc_stride, max_sequence_length // 2)
+
+        # Load validation features/examples tokenized for this max_sequence_length and clamped stride
         data = load_and_tokenize_squad_validation(
             model_name = "bert-base-uncased",
             max_sequence_length = max_sequence_length,
-            doc_stride = args.doc_stride,
+            doc_stride = doc_stride_for_length,
         )
 
         sub_run_directory = run_directory / f"max_sequence_length_{max_sequence_length}"
@@ -77,6 +83,7 @@ def run_phase_2_sequence_length_sweep() -> None:
         pareto_rows.append({
             "label": f"max_sequence_length_{max_sequence_length}",
             "max_sequence_length": max_sequence_length,
+            "doc_stride": doc_stride_for_length,
             "exact_match": inference_output.exact_match,
             "f1": inference_output.f1,
             "energy_per_example_j": inference_output.energy_per_example_j,
