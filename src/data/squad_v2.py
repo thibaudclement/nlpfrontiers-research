@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from datasets import load_dataset
 from transformers import PreTrainedTokenizerBase
+import math
 
 # Load raw SQuAD v2 splits (optionally truncated for harness validation)
 def load_raw_squad_v2_splits(
@@ -144,6 +145,10 @@ def prepare_squad_v2_evaluation_features(
         ]
 
     return tokenized_features
+
+# Convert score difference into no-answer probability using sigmoid mapping
+def convert_score_difference_to_no_answer_probability(score_difference: float) -> float:
+    return float(1.0 / (1.0 + math.exp(score_difference)))
 
 # Postprocess raw start/end logits into final text predictions and no-answer probabilities
 def postprocess_squad_v2_predictions(
