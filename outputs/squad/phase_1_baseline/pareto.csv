@@ -1,0 +1,2 @@
+label,max_sequence_length,num_encoder_layers,exact_match,f1,energy_per_example_j,average_latency_per_example_ms,peak_gpu_memory_mb
+bert_base_full_finetune,384,12,81.07852412488174,88.36339427647245,0.7152273723659766,9.934704482781502,633.34521484375

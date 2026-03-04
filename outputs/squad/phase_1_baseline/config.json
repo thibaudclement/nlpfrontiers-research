@@ -1,0 +1,20 @@
+{
+    "dataset_config": "v1",
+    "dataset_name": "squad",
+    "doc_stride": 128,
+    "evaluation_batch_size": 16,
+    "learning_rate": 3e-05,
+    "max_answer_length": 30,
+    "max_sequence_length": 384,
+    "model_name": "bert-base-uncased",
+    "n_best_size": 20,
+    "num_inference_batches": 100000,
+    "num_train_epochs": 2,
+    "power_sample_interval_s": 0.05,
+    "run_name": "phase_1_baseline",
+    "seed": 42,
+    "train_batch_size": 16,
+    "use_fp16": false,
+    "warmup_ratio": 0.06,
+    "weight_decay": 0.01
+}

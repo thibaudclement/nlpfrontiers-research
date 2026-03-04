@@ -1,0 +1,12 @@
+{
+    "best_model_directory": "runs/2026-03-03_22-20-21_phase_1_baseline/best_model",
+    "inference_benchmark_metrics": {
+        "average_latency_per_example_ms": 9.934704482781502,
+        "energy_per_correct_j": 0.882141578285691,
+        "energy_per_example_j": 0.7152273723659766,
+        "exact_match": 81.07852412488174,
+        "f1": 88.36339427647245,
+        "peak_gpu_memory_mb": 633.34521484375
+    },
+    "trainer_evaluation_metrics": {}
+}
