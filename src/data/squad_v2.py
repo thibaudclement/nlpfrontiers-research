@@ -179,7 +179,7 @@ def postprocess_squad_v2_predictions(
         feature_indices = feature_indices_per_example.get(example_index, [])
         context_text = example["context"]
 
-        minimum_null_score: Optional[float] = None
+        maximum_null_score: Optional[float] = None
         valid_answer_candidates: List[Dict[str, Any]] = []
 
         # Collect candidate spans across all context windows
@@ -191,8 +191,8 @@ def postprocess_squad_v2_predictions(
             # Use CLS token score as the null (no-answer) score baseline
             cls_token_position = 0
             null_score = float(start_logits[cls_token_position] + end_logits[cls_token_position])
-            if minimum_null_score is None or null_score < minimum_null_score:
-                minimum_null_score = null_score
+            if maximum_null_score is None or null_score > maximum_null_score:
+                maximum_null_score = null_score
 
             # Select top-n start and end indices
             best_start_indices = np.argsort(start_logits)[-n_best_size:][::-1]
@@ -229,7 +229,7 @@ def postprocess_squad_v2_predictions(
             best_non_null_score = -1e9
 
         # Compute null-minus-span score (positive means null looks better than span)
-        effective_null_score = float(minimum_null_score) if minimum_null_score is not None else -1e9
+        effective_null_score = float(maximum_null_score) if maximum_null_score is not None else -1e9
         null_minus_best_span_score = effective_null_score - best_non_null_score
 
         # Compute no-answer probability from null-minus-span score
