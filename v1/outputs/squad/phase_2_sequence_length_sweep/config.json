@@ -1,0 +1,23 @@
+{
+    "baseline_model_directory": "runs/2026-03-03_22-20-21_phase_1_baseline/best_model",
+    "dataset": "squad",
+    "doc_stride": 128,
+    "evaluation_batch_size": 16,
+    "gpu_index": 0,
+    "max_answer_length": 30,
+    "model_architecture": "bert-base-uncased finetuned QA",
+    "n_best_size": 20,
+    "note": "For small max_sequence_length values, doc_stride is clamped per configuration to avoid tokenizer errors.",
+    "num_inference_batches": 100000,
+    "power_sample_interval_s": 0.05,
+    "run_name": "phase_2_sequence_length_sweep",
+    "sequence_lengths": [
+        384,
+        320,
+        256,
+        224,
+        192,
+        160,
+        128
+    ]
+}

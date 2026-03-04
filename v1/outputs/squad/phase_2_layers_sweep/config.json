@@ -1,0 +1,22 @@
+{
+    "baseline_model_directory": "runs/2026-03-03_22-20-21_phase_1_baseline/best_model",
+    "dataset": "squad",
+    "doc_stride": 128,
+    "evaluation_batch_size": 16,
+    "gpu_index": 0,
+    "max_answer_length": 30,
+    "max_sequence_length": 384,
+    "model_architecture": "bert-base-uncased finetuned QA",
+    "n_best_size": 20,
+    "num_inference_batches": 100000,
+    "num_layers": [
+        12,
+        10,
+        8,
+        6,
+        4,
+        2
+    ],
+    "power_sample_interval_s": 0.05,
+    "run_name": "phase_2_layers_sweep"
+}

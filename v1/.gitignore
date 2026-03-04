@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+runs/
+.ipynb_checkpoints/
+.DS_Store
+runs/
+*.safetensors
+src/archive/
