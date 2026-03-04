@@ -1,0 +1,13 @@
+transformers
+datasets
+evaluate
+accelerate
+pyyaml
+numpy
+pandas
+matplotlib
+tqdm
+nvidia-ml-py
+psutil
+python-dotenv
+torch

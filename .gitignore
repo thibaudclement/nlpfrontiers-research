@@ -2,9 +2,25 @@
 .venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 runs/
+reports/
+.cache/
+.hf_cache/
 .ipynb_checkpoints/
 .DS_Store
-runs/
 *.safetensors
-src/archive/
+
+
+
+
+# HF / caches
+.cache/
+.hf_cache/
+wandb/
+mlruns/
+
+# Outputs
+runs/
+

@@ -1,0 +1,3 @@
+# Model configuration for BERT-base question answering
+model_name_or_path: bert-base-uncased
+tokenizer_name_or_path: bert-base-uncased
