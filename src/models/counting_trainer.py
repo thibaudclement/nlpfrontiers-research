@@ -16,7 +16,7 @@ class CountingTrainer(Trainer):
         self.training_counters = TrainingCounters()
 
     # Override training_step to count units before executing step
-    def training_step(self, model, inputs):
+    def training_step(self, model, inputs, num_items_in_batch=None):
         # Count training steps (note: counts micro-steps when using gradient accumulation)
         self.training_counters.number_of_training_steps += 1
 
@@ -30,4 +30,5 @@ class CountingTrainer(Trainer):
             if isinstance(attention_mask, torch.Tensor):
                 self.training_counters.number_of_training_tokens += int(attention_mask.sum().item())
 
-        return super().training_step(model, inputs)
+        return super().training_step(model, inputs, num_items_in_batch=num_items_in_batch)
+    
