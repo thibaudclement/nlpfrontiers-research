@@ -33,29 +33,49 @@ def create_timestamped_run_identifier(prefix: str) -> str:
 
 # Build Hugging Face TrainingArguments from training configuration
 def build_training_arguments(training_config: Dict[str, Any], run_directory: Path) -> TrainingArguments:
-    # Place Hugging Face Trainer internal outputs under run folder
+    # Place Hugging Face Trainer internal outputs under the run folder
     trainer_output_directory = str(run_directory / "huggingface_trainer")
 
-    return TrainingArguments(
-        output_dir=trainer_output_directory,
-        learning_rate=float(training_config["learning_rate"]),
-        weight_decay=float(training_config["weight_decay"]),
-        num_train_epochs=float(training_config["number_of_training_epochs"]),
-        per_device_train_batch_size=int(training_config["per_device_training_batch_size"]),
-        per_device_eval_batch_size=int(training_config["per_device_evaluation_batch_size"]),
-        gradient_accumulation_steps=int(training_config["gradient_accumulation_steps"]),
-        warmup_ratio=float(training_config["warmup_ratio"]),
-        logging_steps=int(training_config["logging_steps"]),
-        save_strategy=str(training_config["save_strategy"]),
-        evaluation_strategy=str(training_config["evaluation_strategy"]),
-        eval_steps=int(training_config["evaluation_steps"]),
-        fp16=bool(training_config["use_fp16"]),
-        bf16=bool(training_config["use_bf16"]),
-        dataloader_num_workers=int(training_config["dataloader_num_workers"]),
-        report_to=[],
-        seed=int(training_config["random_seed"]),
-    )
+    # Import here to inspect installed transformers version at runtime
+    import inspect
 
+    # Determine which evaluation keyword this transformers version supports
+    training_arguments_signature = inspect.signature(TrainingArguments.__init__)
+    supports_evaluation_strategy = "evaluation_strategy" in training_arguments_signature.parameters
+    supports_eval_strategy = "eval_strategy" in training_arguments_signature.parameters
+
+    # Build common TrainingArguments fields
+    training_arguments_fields: Dict[str, Any] = {
+        "output_dir": trainer_output_directory,
+        "learning_rate": float(training_config["learning_rate"]),
+        "weight_decay": float(training_config["weight_decay"]),
+        "num_train_epochs": float(training_config["number_of_training_epochs"]),
+        "per_device_train_batch_size": int(training_config["per_device_training_batch_size"]),
+        "per_device_eval_batch_size": int(training_config["per_device_evaluation_batch_size"]),
+        "gradient_accumulation_steps": int(training_config["gradient_accumulation_steps"]),
+        "warmup_ratio": float(training_config["warmup_ratio"]),
+        "logging_steps": int(training_config["logging_steps"]),
+        "save_strategy": str(training_config["save_strategy"]),
+        "eval_steps": int(training_config["evaluation_steps"]),
+        "fp16": bool(training_config["use_fp16"]),
+        "bf16": bool(training_config["use_bf16"]),
+        "dataloader_num_workers": int(training_config["dataloader_num_workers"]),
+        "report_to": [],
+        "seed": int(training_config["random_seed"]),
+    }
+
+    # Add the correct evaluation strategy key depending on transformers version
+    if supports_evaluation_strategy:
+        training_arguments_fields["evaluation_strategy"] = str(training_config["evaluation_strategy"])
+    elif supports_eval_strategy:
+        training_arguments_fields["eval_strategy"] = str(training_config["evaluation_strategy"])
+    else:
+        raise ValueError(
+            "This transformers version supports neither 'evaluation_strategy' nor 'eval_strategy'. "
+            "Please upgrade transformers."
+        )
+
+    return TrainingArguments(**training_arguments_fields)
 
 # Run baseline training and evaluation for SQuAD v2 and record energy metrics
 def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace) -> None:
@@ -270,7 +290,6 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
     print(f"Run complete: {run_directory}")
     print(f"Summary written to: {run_directory / 'summary.json'}")
 
-
 # Build CLI argument parser for harness
 def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="NLP Frontiers v2 - Harness (Hugging Face Trainer)")
@@ -289,13 +308,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
 
     return parser
 
-
 # Entrypoint for running the CLI
 def main() -> None:
     argument_parser = build_argument_parser()
     arguments = argument_parser.parse_args()
     arguments.handler(arguments)
-
 
 if __name__ == "__main__":
     main()
