@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 from typing import Any, Dict, Tuple
 import numpy as np
-from transformers import TrainingArguments, default_data_collator, set_seed
+from transformers import TrainingArguments, DataCollatorWithPadding, set_seed
 from src.data.squad_v2 import (
     load_raw_squad_v2_splits,
     prepare_squad_v2_evaluation_features,
@@ -156,17 +156,27 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
         desc="Tokenizing SQuAD v2 eval",
     )
 
+    # Keep full evaluation features for postprocessing (needs example_id and offset_mapping)
+    tokenized_evaluation_features_for_postprocessing = tokenized_evaluation_features
+
+    # Remove non-tensor columns for Trainer evaluation/prediction to avoid collator issues
+    tokenized_evaluation_features_for_trainer = tokenized_evaluation_features.remove_columns(
+        ["example_id", "offset_mapping"]
+    )
+
+    # Use dynamic padding so batches can be stacked even when pad_to_maximum_length is false
+    data_collator = DataCollatorWithPadding(tokenizer=tokenizer, pad_to_multiple_of=8)
+
     # Build training arguments and Trainer
     import inspect
     training_arguments = build_training_arguments(training_config=training_config, run_directory=run_directory)
-
     trainer_init_signature = inspect.signature(CountingTrainer.__init__)
     trainer_kwargs: Dict[str, Any] = {
         "model": model,
         "args": training_arguments,
         "train_dataset": tokenized_training_features,
-        "eval_dataset": tokenized_evaluation_features,
-        "data_collator": default_data_collator,
+        "eval_dataset": tokenized_evaluation_features_for_trainer,
+        "data_collator": data_collator
     }
 
     # Pass tokenizer only if the installed transformers version supports it.
@@ -223,7 +233,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
     inference_energy_meter.start()
 
     append_line_to_text_file(log_file_path, "[inference] calling trainer.predict(evaluation_features)")
-    prediction_output = trainer.predict(tokenized_evaluation_features)
+    prediction_output = trainer.predict(tokenized_evaluation_features_for_trainer)
 
     inference_energy_meter.stop()
     append_line_to_text_file(log_file_path, "[energy][inference] stopped energy meter for trainer.predict()")
@@ -261,7 +271,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
     append_line_to_text_file(log_file_path, "[evaluation] postprocessing logits into text predictions")
     predictions_by_example_id = postprocess_squad_v2_predictions(
         raw_examples=raw_evaluation_split,
-        tokenized_features=tokenized_evaluation_features,
+        tokenized_features=tokenized_evaluation_features_for_postprocessing,
         raw_predictions=(np.array(start_logits), np.array(end_logits)),
         tokenizer=tokenizer,
         n_best_size=20,
