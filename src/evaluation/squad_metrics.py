@@ -14,6 +14,8 @@ def compute_squad_v2_metrics(
         {
             "id": example["id"],
             "prediction_text": predictions_by_example_id.get(example["id"], ""),
+            # Provide required field for SQuAD v2 metric (0.0 is a simple default)
+            "no_answer_probability": 0.0,
         }
         for example in raw_evaluation_dataset
     ]

@@ -13,7 +13,7 @@ number_of_training_epochs: 1
 per_device_training_batch_size: 8
 per_device_evaluation_batch_size: 16
 gradient_accumulation_steps: 1
-warmup_ratio: 0.06
+warmup_steps: 50
 logging_steps: 50
 
 # Keep baseline harness simple (no checkpoints yet)
