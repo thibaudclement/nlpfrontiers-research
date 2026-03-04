@@ -158,6 +158,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
 
     # Build training arguments and Trainer
     import inspect
+    training_arguments = build_training_arguments(training_config=training_config, run_directory=run_directory)
 
     trainer_init_signature = inspect.signature(CountingTrainer.__init__)
     trainer_kwargs: Dict[str, Any] = {
