@@ -269,7 +269,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
 
     # Convert logits into final answer strings per example id
     append_line_to_text_file(log_file_path, "[evaluation] postprocessing logits into text predictions")
-    predictions_by_example_id = postprocess_squad_v2_predictions(
+    predictions_by_example_id, no_answer_probability_by_example_id = postprocess_squad_v2_predictions(
         raw_examples=raw_evaluation_split,
         tokenized_features=tokenized_evaluation_features_for_postprocessing,
         raw_predictions=(np.array(start_logits), np.array(end_logits)),
@@ -283,6 +283,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
     append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics")
     metrics = compute_squad_v2_metrics(
         predictions_by_example_id=predictions_by_example_id,
+        no_answer_probability_by_example_id=no_answer_probability_by_example_id,
         raw_evaluation_dataset=raw_evaluation_split,
     )
     write_json_file(metrics, run_directory / "metrics.json")

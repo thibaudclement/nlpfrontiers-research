@@ -145,8 +145,7 @@ def prepare_squad_v2_evaluation_features(
 
     return tokenized_features
 
-
-# Postprocess raw start/end logits into final text predictions
+# Postprocess raw start/end logits into final text predictions and no-answer probabilities
 def postprocess_squad_v2_predictions(
     raw_examples: Any,
     tokenized_features: Any,
@@ -155,7 +154,7 @@ def postprocess_squad_v2_predictions(
     n_best_size: int = 20,
     maximum_answer_length: int = 30,
     null_score_difference_threshold: float = 0.0,
-) -> Dict[str, str]:
+) -> Tuple[Dict[str, str], Dict[str, float]]:
     all_start_logits, all_end_logits = raw_predictions
 
     # Map example id to index for grouping features by example
@@ -167,9 +166,10 @@ def postprocess_squad_v2_predictions(
         example_index = example_id_to_index[feature["example_id"]]
         feature_indices_per_example.setdefault(example_index, []).append(feature_index)
 
-    predictions_by_id: Dict[str, str] = {}
+    predicted_text_by_example_id: Dict[str, str] = {}
+    predicted_no_answer_probability_by_example_id: Dict[str, float] = {}
 
-    # Select best answer candidate across all context windows per example
+    # Select the best answer candidate across all context windows per example
     for example_index, example in enumerate(raw_examples):
         feature_indices = feature_indices_per_example.get(example_index, [])
         context_text = example["context"]
@@ -177,6 +177,7 @@ def postprocess_squad_v2_predictions(
         minimum_null_score: Optional[float] = None
         valid_answer_candidates: List[Dict[str, Any]] = []
 
+        # Collect candidate spans across all context windows
         for feature_index in feature_indices:
             start_logits = all_start_logits[feature_index]
             end_logits = all_end_logits[feature_index]
@@ -211,27 +212,32 @@ def postprocess_squad_v2_predictions(
                     predicted_text = context_text[start_char:end_char]
                     candidate_score = float(start_logits[start_index] + end_logits[end_index])
 
-                    valid_answer_candidates.append(
-                        {"score": candidate_score, "text": predicted_text}
-                    )
+                    valid_answer_candidates.append({"score": candidate_score, "text": predicted_text})
 
         # Choose best non-null candidate (if any)
         if valid_answer_candidates:
             best_candidate = max(valid_answer_candidates, key=lambda item: item["score"])
-            best_non_null_text = best_candidate["text"]
+            best_non_null_text = str(best_candidate["text"])
             best_non_null_score = float(best_candidate["score"])
         else:
             best_non_null_text = ""
             best_non_null_score = -1e9
 
+        # Compute score difference
+        effective_null_score = float(minimum_null_score) if minimum_null_score is not None else -1e9
+        score_difference = best_non_null_score - effective_null_score
+
+        # Compute no-answer probability from score difference
+        no_answer_probability = convert_score_difference_to_no_answer_probability(score_difference)
+
+        # Decide whether to output empty answer based on threshold
+        example_id = str(example["id"])
+        predicted_no_answer_probability_by_example_id[example_id] = float(no_answer_probability)
+
         # Apply SQuAD v2 null decision threshold
-        effective_null_score = minimum_null_score if minimum_null_score is not None else -1e9
-        score_difference = best_non_null_score - float(effective_null_score)
-
-        example_id = example["id"]
         if score_difference < null_score_difference_threshold:
-            predictions_by_id[example_id] = ""
+            predicted_text_by_example_id[example_id] = ""
         else:
-            predictions_by_id[example_id] = best_non_null_text
+            predicted_text_by_example_id[example_id] = best_non_null_text
 
-    return predictions_by_id
+    return predicted_text_by_example_id, predicted_no_answer_probability_by_example_id

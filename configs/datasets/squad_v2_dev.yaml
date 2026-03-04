@@ -1,0 +1,9 @@
+# Dataset configuration for harness validation and experiments (SQuAD v2)
+dataset_name: squad_v2
+huggingface_dataset_id: squad_v2
+train_split_name: train
+evaluation_split_name: validation
+
+# Use small subsets for initial harness validation (set to null for full runs)
+maximum_train_examples: 2000
+maximum_evaluation_examples: 1000
