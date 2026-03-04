@@ -278,6 +278,21 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
         maximum_answer_length=30,
         null_score_difference_threshold=0.0,
     )
+    
+    # Log basic statistics about no-answer probabilities to validate calibration.
+    no_answer_probabilities = list(no_answer_probability_by_example_id.values())
+    if len(no_answer_probabilities) > 0:
+        append_line_to_text_file(
+            log_file_path,
+            f"[debug] no_answer_probability stats: "
+            f"min={min(no_answer_probabilities):.6f}, "
+            f"max={max(no_answer_probabilities):.6f}, "
+            f"mean={sum(no_answer_probabilities)/len(no_answer_probabilities):.6f}"
+        )
+        append_line_to_text_file(
+            log_file_path,
+            f"[debug] no_answer_probability samples: {no_answer_probabilities[:10]}"
+        )
 
     # Compute official SQuAD v2 metrics
     append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics")
