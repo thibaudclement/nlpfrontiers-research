@@ -146,9 +146,9 @@ def prepare_squad_v2_evaluation_features(
 
     return tokenized_features
 
-# Convert score difference into no-answer probability using sigmoid mapping
-def convert_score_difference_to_no_answer_probability(score_difference: float) -> float:
-    return float(1.0 / (1.0 + math.exp(score_difference)))
+# Convert (null_score - best_span_score) into a no-answer probability using sigmoid mapping
+def convert_score_difference_to_no_answer_probability(null_minus_best_span_score: float) -> float:
+    return float(1.0 / (1.0 + math.exp(-null_minus_best_span_score)))
 
 # Postprocess raw start/end logits into final text predictions and no-answer probabilities
 def postprocess_squad_v2_predictions(
@@ -228,21 +228,18 @@ def postprocess_squad_v2_predictions(
             best_non_null_text = ""
             best_non_null_score = -1e9
 
-        # Compute score difference
+        # Compute null-minus-span score (positive means null looks better than span)
         effective_null_score = float(minimum_null_score) if minimum_null_score is not None else -1e9
-        score_difference = best_non_null_score - effective_null_score
+        null_minus_best_span_score = effective_null_score - best_non_null_score
 
-        # Compute no-answer probability from score difference
-        no_answer_probability = convert_score_difference_to_no_answer_probability(score_difference)
+        # Compute no-answer probability from null-minus-span score
+        no_answer_probability = convert_score_difference_to_no_answer_probability(null_minus_best_span_score)
 
-        # Decide whether to output empty answer based on threshold
+        # Record no-answer probability for metric thresholding
         example_id = str(example["id"])
         predicted_no_answer_probability_by_example_id[example_id] = float(no_answer_probability)
 
-        # Apply SQuAD v2 null decision threshold
-        if score_difference < null_score_difference_threshold:
-            predicted_text_by_example_id[example_id] = ""
-        else:
-            predicted_text_by_example_id[example_id] = best_non_null_text
+        # For metric computation, always provide the best non-null text and let the metric apply the threshold
+        predicted_text_by_example_id[example_id] = best_non_null_text
 
     return predicted_text_by_example_id, predicted_no_answer_probability_by_example_id
