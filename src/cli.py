@@ -53,7 +53,7 @@ def build_training_arguments(training_config: Dict[str, Any], run_directory: Pat
         "per_device_train_batch_size": int(training_config["per_device_training_batch_size"]),
         "per_device_eval_batch_size": int(training_config["per_device_evaluation_batch_size"]),
         "gradient_accumulation_steps": int(training_config["gradient_accumulation_steps"]),
-        "warmup_steps": float(training_config["warmup_steps"]),
+        "warmup_steps": int(training_config["warmup_steps"]),
         "logging_steps": int(training_config["logging_steps"]),
         "save_strategy": str(training_config["save_strategy"]),
         "eval_steps": int(training_config["evaluation_steps"]),
@@ -276,9 +276,8 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
         tokenizer=tokenizer,
         n_best_size=20,
         maximum_answer_length=30,
-        null_score_difference_threshold=0.0,
     )
-    
+
     # Log basic statistics about no-answer probabilities to validate calibration.
     no_answer_probabilities = list(no_answer_probability_by_example_id.values())
     if len(no_answer_probabilities) > 0:

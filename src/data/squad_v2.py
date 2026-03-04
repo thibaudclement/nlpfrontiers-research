@@ -158,7 +158,6 @@ def postprocess_squad_v2_predictions(
     tokenizer: PreTrainedTokenizerBase,
     n_best_size: int = 20,
     maximum_answer_length: int = 30,
-    null_score_difference_threshold: float = 0.0,
 ) -> Tuple[Dict[str, str], Dict[str, float]]:
     all_start_logits, all_end_logits = raw_predictions
 
@@ -188,11 +187,13 @@ def postprocess_squad_v2_predictions(
             end_logits = all_end_logits[feature_index]
             offset_mapping = tokenized_features[feature_index]["offset_mapping"]
 
-            # Use CLS token score as the null (no-answer) score baseline
-            cls_token_position = 0
-            null_score = float(start_logits[cls_token_position] + end_logits[cls_token_position])
-            if maximum_null_score is None or null_score > maximum_null_score:
-                maximum_null_score = null_score
+        # Use the actual CLS token position in this feature as the null (no-answer) score baseline.
+        input_ids = tokenized_features[feature_index]["input_ids"]
+        cls_token_position = input_ids.index(tokenizer.cls_token_id)
+
+        null_score = float(start_logits[cls_token_position] + end_logits[cls_token_position])
+        if maximum_null_score is None or null_score > maximum_null_score:
+            maximum_null_score = null_score
 
             # Select top-n start and end indices
             best_start_indices = np.argsort(start_logits)[-n_best_size:][::-1]
