@@ -157,15 +157,23 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
     )
 
     # Build training arguments and Trainer
-    training_arguments = build_training_arguments(training_config=training_config, run_directory=run_directory)
-    trainer = CountingTrainer(
-        model=model,
-        args=training_arguments,
-        train_dataset=tokenized_training_features,
-        eval_dataset=tokenized_evaluation_features,
-        tokenizer=tokenizer,
-        data_collator=default_data_collator,
-    )
+    import inspect
+
+    trainer_init_signature = inspect.signature(CountingTrainer.__init__)
+    trainer_kwargs: Dict[str, Any] = {
+        "model": model,
+        "args": training_arguments,
+        "train_dataset": tokenized_training_features,
+        "eval_dataset": tokenized_evaluation_features,
+        "data_collator": default_data_collator,
+    }
+
+    # Pass tokenizer only if the installed transformers version supports it.
+    if "tokenizer" in trainer_init_signature.parameters:
+        trainer_kwargs["tokenizer"] = tokenizer
+
+    # Create the Trainer (with counting enabled)
+    trainer = CountingTrainer(**trainer_kwargs)
 
     # Training energy measurement
     append_line_to_text_file(log_file_path, "[energy][train] starting energy meter")
