@@ -1,11 +1,12 @@
 from __future__ import annotations
 import argparse
 import datetime as datetime_module
+import inspect
 import math
 from pathlib import Path
 from typing import Any, Dict
 import numpy as np
-from transformers import TrainingArguments, DataCollatorWithPadding, set_seed
+from transformers import DataCollatorWithPadding, TrainingArguments, set_seed
 from src.data.squad_v2 import (
     load_raw_squad_v2_splits,
     prepare_squad_v2_evaluation_features,
@@ -27,25 +28,22 @@ from src.utils.io import (
 from src.utils.pruning import apply_global_magnitude_pruning
 from src.utils.token_count import count_non_padding_tokens_in_feature_dataset
 
-# Create timestamped run identifier for reproducible run folders
+# Create a timestamped run identifier for reproducible run folders
 def create_timestamped_run_identifier(prefix: str) -> str:
     timestamp = datetime_module.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     return f"{timestamp}_{prefix}"
 
-# Build Hugging Face TrainingArguments from training configuration
+# Build Hugging Face TrainingArguments from training configuration (Transformers-version compatible)
 def build_training_arguments(training_config: Dict[str, Any], run_directory: Path) -> TrainingArguments:
-    # Place Hugging Face Trainer internal outputs under run folder
+    # Place Hugging Face Trainer internal outputs under the run folder
     trainer_output_directory = str(run_directory / "huggingface_trainer")
 
-    # Import here to inspect installed transformers version at runtime
-    import inspect
-
-    # Determine which evaluation keyword this transformers version supports
+    # Inspect installed transformers signature for evaluation strategy kw
     training_arguments_signature = inspect.signature(TrainingArguments.__init__)
     supports_evaluation_strategy = "evaluation_strategy" in training_arguments_signature.parameters
     supports_eval_strategy = "eval_strategy" in training_arguments_signature.parameters
 
-    # Build common TrainingArguments fields
+    # Assemble common TrainingArguments fields
     training_arguments_fields: Dict[str, Any] = {
         "output_dir": trainer_output_directory,
         "learning_rate": float(training_config["learning_rate"]),
@@ -56,11 +54,17 @@ def build_training_arguments(training_config: Dict[str, Any], run_directory: Pat
         "gradient_accumulation_steps": int(training_config["gradient_accumulation_steps"]),
         "warmup_steps": int(training_config["warmup_steps"]),
         "logging_steps": int(training_config["logging_steps"]),
+
+        # Control checkpoint frequency and retention
         "save_strategy": str(training_config["save_strategy"]),
         "save_steps": int(training_config.get("save_steps", 0)),
         "save_total_limit": int(training_config.get("save_total_limit", 1)),
         "save_only_model": bool(training_config.get("save_only_model", False)),
+
+        # Control evaluation schedule during training
         "eval_steps": int(training_config["evaluation_steps"]),
+
+        # Precision and dataloader settings
         "fp16": bool(training_config["use_fp16"]),
         "bf16": bool(training_config["use_bf16"]),
         "dataloader_num_workers": int(training_config["dataloader_num_workers"]),
@@ -68,7 +72,7 @@ def build_training_arguments(training_config: Dict[str, Any], run_directory: Pat
         "seed": int(training_config["random_seed"]),
     }
 
-    # Add the correct evaluation strategy key depending on transformers version
+    # Add correct evaluation strategy key depending on transformers version
     if supports_evaluation_strategy:
         training_arguments_fields["evaluation_strategy"] = str(training_config["evaluation_strategy"])
     elif supports_eval_strategy:
@@ -81,7 +85,7 @@ def build_training_arguments(training_config: Dict[str, Any], run_directory: Pat
 
     return TrainingArguments(**training_arguments_fields)
 
-# Apply no-answer threshold to produce explicit empty-string predictions for SQuAD v2
+# Apply a no-answer probability threshold to convert predictions into explicit empty-string outputs for SQuAD v2
 def apply_no_answer_probability_threshold(
     predictions_by_example_id: Dict[str, str],
     no_answer_probability_by_example_id: Dict[str, float],
@@ -92,15 +96,11 @@ def apply_no_answer_probability_threshold(
     # Convert no-answer probabilities into explicit empty-string predictions
     for example_id, predicted_text in predictions_by_example_id.items():
         no_answer_probability = float(no_answer_probability_by_example_id.get(example_id, 0.0))
-        if no_answer_probability >= float(no_answer_probability_threshold):
-            thresholded_predictions_by_example_id[example_id] = ""
-        else:
-            thresholded_predictions_by_example_id[example_id] = predicted_text
+        thresholded_predictions_by_example_id[example_id] = "" if no_answer_probability >= no_answer_probability_threshold else predicted_text
 
     return thresholded_predictions_by_example_id
 
-
-# Run pruning, brief refinetune, and evaluation on SQuAD v2
+# Run magnitude pruning, brief refinetuning, and evaluation on SQuAD v2
 def run_prune_and_refinetune_squad_v2(arguments: argparse.Namespace) -> None:
     dataset_config = read_yaml_file(arguments.dataset_config_path)
     model_config = read_yaml_file(arguments.model_config_path)
@@ -196,22 +196,21 @@ def run_prune_and_refinetune_squad_v2(arguments: argparse.Namespace) -> None:
         desc="Tokenizing SQuAD v2 eval",
     )
 
-    # Keep full evaluation features for postprocessing
+    # Keep full evaluation features for postprocessing (needs example_id and offset_mapping)
     tokenized_evaluation_features_for_postprocessing = tokenized_evaluation_features
 
-    # Remove non-tensor columns for Trainer prediction
+    # Remove non-tensor columns for Trainer evaluation/prediction to avoid collator issues
     tokenized_evaluation_features_for_trainer = tokenized_evaluation_features.remove_columns(
         ["example_id", "offset_mapping"]
     )
 
-    # Use dynamic padding for batches
+    # Use dynamic padding so batches can be stacked even when pad_to_maximum_length is false
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer, pad_to_multiple_of=8)
 
-    # Build TrainingArguments and Trainer
-    import inspect
+    # Build training arguments for refinetuning
     training_arguments = build_training_arguments(training_config=training_config, run_directory=run_directory)
 
-    # Construct Trainer arguments in a version-compatible way
+    # Construct Trainer arguments in a version-compatible way (tokenizer kw may be unsupported)
     trainer_init_signature = inspect.signature(CountingTrainer.__init__)
     trainer_kwargs: Dict[str, Any] = {
         "model": model,
@@ -223,6 +222,7 @@ def run_prune_and_refinetune_squad_v2(arguments: argparse.Namespace) -> None:
     if "tokenizer" in trainer_init_signature.parameters:
         trainer_kwargs["tokenizer"] = tokenizer
 
+    # Create Trainer for refinetuning
     trainer = CountingTrainer(**trainer_kwargs)
 
     # Measure training energy during refinetune
@@ -232,9 +232,11 @@ def run_prune_and_refinetune_squad_v2(arguments: argparse.Namespace) -> None:
     )
     training_energy_meter.start()
 
+    # Execute training with Hugging Face Trainer
     append_line_to_text_file(log_file_path, "[train] calling trainer.train() (refinetune)")
     training_result = trainer.train()
 
+    # Stop training energy measurement
     training_energy_meter.stop()
     append_line_to_text_file(log_file_path, "[energy][train] stopped energy meter (refinetune)")
 
@@ -311,23 +313,41 @@ def run_prune_and_refinetune_squad_v2(arguments: argparse.Namespace) -> None:
         maximum_answer_length=30,
     )
 
-    # Apply thresholded predictions for SQuAD v2
+    # Log basic statistics about no-answer probabilities to validate calibration
+    no_answer_probabilities = list(no_answer_probability_by_example_id.values())
+    if len(no_answer_probabilities) > 0:
+        append_line_to_text_file(
+            log_file_path,
+            f"[debug] no_answer_probability stats: "
+            f"min={min(no_answer_probabilities):.6f}, "
+            f"max={max(no_answer_probabilities):.6f}, "
+            f"mean={sum(no_answer_probabilities)/len(no_answer_probabilities):.6f}",
+        )
+
+    # Compute raw metrics (for completeness and debugging)
+    append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics (raw)")
+    raw_metrics = compute_squad_v2_metrics(
+        predictions_by_example_id=predictions_by_example_id,
+        no_answer_probability_by_example_id=no_answer_probability_by_example_id,
+        raw_evaluation_dataset=raw_evaluation_split,
+    )
+    write_json_file(raw_metrics, run_directory / "metrics.json")
+
+    # Use a fixed no-answer probability threshold for comparability across baselines
     no_answer_probability_threshold = float(training_config.get("no_answer_probability_threshold", 0.06458))
+    append_line_to_text_file(
+        log_file_path,
+        f"[evaluation] using fixed no_answer_probability_threshold={no_answer_probability_threshold:.6f}",
+    )
+
+    # Apply threshold to produce explicit empty-string predictions
     thresholded_predictions_by_example_id = apply_no_answer_probability_threshold(
         predictions_by_example_id=predictions_by_example_id,
         no_answer_probability_by_example_id=no_answer_probability_by_example_id,
         no_answer_probability_threshold=no_answer_probability_threshold,
     )
 
-    # Compute metrics (raw + thresholded)
-    append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics (raw)")
-    metrics = compute_squad_v2_metrics(
-        predictions_by_example_id=predictions_by_example_id,
-        no_answer_probability_by_example_id=no_answer_probability_by_example_id,
-        raw_evaluation_dataset=raw_evaluation_split,
-    )
-    write_json_file(metrics, run_directory / "metrics.json")
-
+    # Compute thresholded metrics (this is what you should report)
     append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics (thresholded)")
     thresholded_metrics = compute_squad_v2_metrics(
         predictions_by_example_id=thresholded_predictions_by_example_id,
@@ -344,7 +364,7 @@ def run_prune_and_refinetune_squad_v2(arguments: argparse.Namespace) -> None:
         "model_name_or_path": arguments.checkpoint_path,
         "pruning_report": pruning_report,
         "no_answer_probability_threshold": no_answer_probability_threshold,
-        "metrics": metrics,
+        "metrics": raw_metrics,
         "metrics_thresholded": thresholded_metrics,
         "training_energy": {
             "energy_joules": training_energy_joules,
