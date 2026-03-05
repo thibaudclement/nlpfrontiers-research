@@ -270,7 +270,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
     else:
         start_logits, end_logits = raw_predictions
 
-    # Convert logits into final answer strings per example id
+    # Convert logits into best-span predictions and per-example null-vs-span score differences
     append_line_to_text_file(log_file_path, "[evaluation] postprocessing logits into text predictions")
     predictions_by_example_id, no_answer_probability_by_example_id = postprocess_squad_v2_predictions(
         raw_examples=raw_evaluation_split,
@@ -281,7 +281,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
         maximum_answer_length=30,
     )
 
-    # Log basic statistics about no-answer probabilities to validate calibration.
+    # Log basic statistics about no-answer probabilities to validate calibration
     no_answer_probabilities = list(no_answer_probability_by_example_id.values())
     if len(no_answer_probabilities) > 0:
         append_line_to_text_file(
@@ -296,8 +296,25 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
             f"[debug] no_answer_probability samples: {no_answer_probabilities[:10]}"
         )
 
-    # Compute official SQuAD v2 metrics
-    append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics")
+    # Apply standard SQuAD v2 decision rule by converting probabilities into explicit empty-string predictions
+    # (Use dev-tuned threshold reported by metric as default)
+    no_answer_probability_threshold = float(training_config.get("no_answer_probability_threshold", 0.06458))
+    thresholded_predictions_by_example_id: Dict[str, str] = {}
+
+    for example_id, predicted_text in predictions_by_example_id.items():
+        no_answer_probability = float(no_answer_probability_by_example_id.get(example_id, 0.0))
+        if no_answer_probability >= no_answer_probability_threshold:
+            thresholded_predictions_by_example_id[example_id] = ""
+        else:
+            thresholded_predictions_by_example_id[example_id] = predicted_text
+
+    append_line_to_text_file(
+        log_file_path,
+        f"[evaluation] applied no_answer_probability_threshold={no_answer_probability_threshold:.6f}",
+    )
+
+    # Compute official SQuAD v2 metrics (raw probabilities, no explicit thresholding of prediction_text)
+    append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics (raw)")
     metrics = compute_squad_v2_metrics(
         predictions_by_example_id=predictions_by_example_id,
         no_answer_probability_by_example_id=no_answer_probability_by_example_id,
@@ -306,12 +323,24 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
     write_json_file(metrics, run_directory / "metrics.json")
     append_line_to_text_file(log_file_path, f"[evaluation] metrics: {metrics}")
 
+    # Compute official SQuAD v2 metrics using explicit no-answer strings (standard decision rule)
+    append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics (thresholded)")
+    thresholded_metrics = compute_squad_v2_metrics(
+        predictions_by_example_id=thresholded_predictions_by_example_id,
+        no_answer_probability_by_example_id=no_answer_probability_by_example_id,
+        raw_evaluation_dataset=raw_evaluation_split,
+    )
+    write_json_file(thresholded_metrics, run_directory / "metrics_thresholded.json")
+    append_line_to_text_file(log_file_path, f"[evaluation] metrics_thresholded: {thresholded_metrics}")
+
     # One-file summary for quick inspection
     summary = {
         "run_identifier": run_identifier,
         "dataset_id": dataset_config["huggingface_dataset_id"],
         "model_name_or_path": model_config["model_name_or_path"],
         "metrics": metrics,
+        "metrics_thresholded": thresholded_metrics,
+        "no_answer_probability_threshold": no_answer_probability_threshold,
         "training_energy": {
             "energy_joules": training_energy_joules,
             **training_energy_report_additional_fields,
@@ -326,6 +355,135 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
 
     print(f"Run complete: {run_directory}")
     print(f"Summary written to: {run_directory / 'summary.json'}")
+
+# Evaluate a saved checkpoint on SQuAD v2 without retraining (predict + postprocess + metrics only)
+def run_squad_v2_evaluation_only(arguments: argparse.Namespace) -> None:
+    dataset_config = read_yaml_file(arguments.dataset_config_path)
+    model_config = read_yaml_file(arguments.model_config_path)
+    training_config = read_yaml_file(arguments.training_config_path)
+
+    # Create output directory for evaluation-only results
+    run_identifier = arguments.run_identifier or create_timestamped_run_identifier("eval_only_squad_v2")
+    run_directory = ensure_directory_exists(Path("runs") / run_identifier)
+    log_file_path = run_directory / "logs.txt"
+
+    resolved_config = merge_dictionaries(
+        {"run_identifier": run_identifier},
+        {"dataset": dataset_config},
+        {"model": model_config},
+        {"training": training_config},
+        {"checkpoint_path": arguments.checkpoint_path},
+    )
+    write_yaml_file(resolved_config, run_directory / "config_resolved.yaml")
+
+    append_line_to_text_file(log_file_path, f"[run] {run_identifier}")
+    append_line_to_text_file(log_file_path, f"[checkpoint] {arguments.checkpoint_path}")
+
+    # Set random seed for reproducibility
+    set_seed(int(training_config["random_seed"]))
+
+    # Load tokenizer (from model config) and model weights from checkpoint
+    qa_artifacts = load_question_answering_model_and_tokenizer(
+        model_name_or_path=arguments.checkpoint_path,
+        tokenizer_name_or_path=model_config.get("tokenizer_name_or_path", model_config["model_name_or_path"]),
+    )
+    tokenizer = qa_artifacts.tokenizer
+    model = qa_artifacts.model
+
+    # Load raw SQuAD v2 splits
+    raw_train_split, raw_evaluation_split = load_raw_squad_v2_splits(
+        huggingface_dataset_id=dataset_config["huggingface_dataset_id"],
+        train_split_name=dataset_config["train_split_name"],
+        evaluation_split_name=dataset_config["evaluation_split_name"],
+        maximum_train_examples=dataset_config.get("maximum_train_examples"),
+        maximum_evaluation_examples=dataset_config.get("maximum_evaluation_examples"),
+    )
+
+    maximum_sequence_length = int(training_config["maximum_sequence_length"])
+    document_stride = int(training_config["document_stride"])
+    pad_to_maximum_length = bool(training_config["pad_to_maximum_length"])
+
+    # Tokenize evaluation split into model-ready features with offset mappings
+    append_line_to_text_file(log_file_path, "[data] tokenizing evaluation features")
+    tokenized_evaluation_features = raw_evaluation_split.map(
+        lambda examples: prepare_squad_v2_evaluation_features(
+            examples=examples,
+            tokenizer=tokenizer,
+            maximum_sequence_length=maximum_sequence_length,
+            document_stride=document_stride,
+            pad_to_maximum_length=pad_to_maximum_length,
+        ),
+        batched=True,
+        remove_columns=raw_evaluation_split.column_names,
+        desc="Tokenizing SQuAD v2 eval",
+    )
+
+    # Keep full evaluation features for postprocessing (needs example_id and offset_mapping)
+    tokenized_evaluation_features_for_postprocessing = tokenized_evaluation_features
+
+    # Remove non-tensor columns for Trainer evaluation/prediction to avoid collator issues
+    tokenized_evaluation_features_for_trainer = tokenized_evaluation_features.remove_columns(
+        ["example_id", "offset_mapping"]
+    )
+
+    # Use dynamic padding for evaluation batches
+    data_collator = DataCollatorWithPadding(tokenizer=tokenizer, pad_to_multiple_of=8)
+
+    # Build minimal TrainingArguments for prediction (no training)
+    prediction_arguments = build_training_arguments(training_config=training_config, run_directory=run_directory)
+
+    # Create Trainer for prediction only
+    import inspect
+    trainer_init_signature = inspect.signature(CountingTrainer.__init__)
+    trainer_kwargs: Dict[str, Any] = {
+        "model": model,
+        "args": prediction_arguments,
+        "eval_dataset": tokenized_evaluation_features_for_trainer,
+        "data_collator": data_collator,
+    }
+    if "tokenizer" in trainer_init_signature.parameters:
+        trainer_kwargs["tokenizer"] = tokenizer
+    trainer = CountingTrainer(**trainer_kwargs)
+
+    # Run prediction
+    append_line_to_text_file(log_file_path, "[inference] calling trainer.predict(evaluation_features)")
+    prediction_output = trainer.predict(tokenized_evaluation_features_for_trainer)
+
+    raw_predictions = prediction_output.predictions
+    if isinstance(raw_predictions, tuple) and len(raw_predictions) == 2:
+        start_logits, end_logits = raw_predictions
+    else:
+        start_logits, end_logits = raw_predictions
+
+    # Postprocess
+    append_line_to_text_file(log_file_path, "[evaluation] postprocessing logits into text predictions")
+    predictions_by_example_id, no_answer_probability_by_example_id = postprocess_squad_v2_predictions(
+        raw_examples=raw_evaluation_split,
+        tokenized_features=tokenized_evaluation_features_for_postprocessing,
+        raw_predictions=(np.array(start_logits), np.array(end_logits)),
+        tokenizer=tokenizer,
+        n_best_size=20,
+        maximum_answer_length=30,
+    )
+
+    # Apply probability threshold to create explicit no-answer strings
+    no_answer_probability_threshold = float(training_config.get("no_answer_probability_threshold", 0.06458))
+    thresholded_predictions_by_example_id: Dict[str, str] = {}
+    for example_id, predicted_text in predictions_by_example_id.items():
+        no_answer_probability = float(no_answer_probability_by_example_id.get(example_id, 0.0))
+        thresholded_predictions_by_example_id[example_id] = "" if no_answer_probability >= no_answer_probability_threshold else predicted_text
+
+    # Compute metrics
+    append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics (thresholded)")
+    thresholded_metrics = compute_squad_v2_metrics(
+        predictions_by_example_id=thresholded_predictions_by_example_id,
+        no_answer_probability_by_example_id=no_answer_probability_by_example_id,
+        raw_evaluation_dataset=raw_evaluation_split,
+    )
+    write_json_file(thresholded_metrics, run_directory / "metrics_thresholded.json")
+    append_line_to_text_file(log_file_path, f"[evaluation] metrics_thresholded: {thresholded_metrics}")
+
+    print(f"Evaluation-only run complete: {run_directory}")
 
 # Build CLI argument parser for harness
 def build_argument_parser() -> argparse.ArgumentParser:
@@ -342,6 +500,18 @@ def build_argument_parser() -> argparse.ArgumentParser:
     baseline_parser.add_argument("--training-config-path", required=True)
     baseline_parser.add_argument("--run-identifier", default=None)
     baseline_parser.set_defaults(handler=run_squad_v2_baseline_training_and_evaluation)
+
+    # Create command for evaluation-only (no retraining) from a checkpoint.
+    evaluation_only_parser = subparsers.add_parser(
+        "evaluate_squad_v2_checkpoint",
+        help="Evaluate a saved QA checkpoint on SQuAD v2 without retraining (predict + postprocess + metrics).",
+    )
+    evaluation_only_parser.add_argument("--dataset-config-path", required=True)
+    evaluation_only_parser.add_argument("--model-config-path", required=True)
+    evaluation_only_parser.add_argument("--training-config-path", required=True)
+    evaluation_only_parser.add_argument("--checkpoint-path", required=True)
+    evaluation_only_parser.add_argument("--run-identifier", default=None)
+    evaluation_only_parser.set_defaults(handler=run_squad_v2_evaluation_only)
 
     return parser
 
