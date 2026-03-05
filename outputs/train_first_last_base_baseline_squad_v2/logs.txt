@@ -1,0 +1,21 @@
+[run] 2026-03-05_12-20-49_baseline_squad_v2
+[configs] dataset=configs/datasets/squad_v2.yaml model=configs/models/bert_base.yaml training=configs/training/train_first_last.yaml
+[model] freeze_strategy=train_first_last (trainable_layers=[0, 1, 10, 11], total_layers=12)
+[model] trainable_parameters=52190210 total_parameters=108893186 trainable_fraction=0.479279
+[data] tokenizing training features
+[data] tokenizing evaluation features
+[energy][train] starting energy meter
+[train] calling trainer.train()
+[energy][train] stopped energy meter
+[energy][inference] starting energy meter for trainer.predict()
+[inference] calling trainer.predict(evaluation_features)
+[energy][inference] stopped energy meter for trainer.predict()
+[evaluation] postprocessing logits into text predictions
+[debug] no_answer_probability stats: min=0.000000, max=1.000000, mean=0.423537
+[debug] no_answer_probability samples: [2.850752038685737e-07, 3.0076742386627304e-06, 0.38159948952091055, 0.0013810095029172219, 1.5431841067843757e-07, 0.06902824431017225, 0.21517933217235305, 0.9073484357450512, 0.6442902410474096, 1.4899888309169177e-05]
+[evaluation] applied no_answer_probability_threshold=0.064580
+[evaluation] computing SQuAD v2 metrics (raw)
+[evaluation] metrics: {'exact': 36.595637159942726, 'f1': 41.32988583700108, 'total': 11873, 'HasAns_exact': 73.29622132253711, 'HasAns_f1': 82.77829530072769, 'HasAns_total': 5928, 'NoAns_exact': 0.0, 'NoAns_f1': 0.0, 'NoAns_total': 5945, 'best_exact': 66.55436705129284, 'best_exact_thresh': 0.03908805549144745, 'best_f1': 69.69431884129189, 'best_f1_thresh': 0.1826016753911972}
+[evaluation] computing SQuAD v2 metrics (thresholded)
+[evaluation] metrics_thresholded: {'exact': 66.52909963783374, 'f1': 69.35464810481989, 'total': 11873, 'HasAns_exact': 54.36909581646424, 'HasAns_f1': 60.02829570656653, 'HasAns_total': 5928, 'NoAns_exact': 78.65433137089991, 'NoAns_f1': 78.65433137089991, 'NoAns_total': 5945, 'best_exact': 66.55436705129284, 'best_exact_thresh': 0.03908805549144745, 'best_f1': 69.35464810482001, 'best_f1_thresh': 0.06436346471309662}
+[done] baseline harness run complete
