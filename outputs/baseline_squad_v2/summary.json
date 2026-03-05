@@ -1,0 +1,56 @@
+{
+  "dataset_id": "squad_v2",
+  "inference_energy": {
+    "energy_joules": 5086.823206260209,
+    "joules_per_inference_batch": 6.702006859367865,
+    "joules_per_inference_example": 0.4192206367447016,
+    "joules_per_inference_token": 0.0023291080429868423,
+    "number_of_inference_batches": 759,
+    "number_of_inference_examples": 12134,
+    "number_of_inference_tokens": 2184022,
+    "phase": "inference"
+  },
+  "metrics": {
+    "HasAns_exact": 79.72334682860999,
+    "HasAns_f1": 87.61384743048741,
+    "HasAns_total": 5928,
+    "NoAns_exact": 0.0,
+    "NoAns_f1": 0.0,
+    "NoAns_total": 5945,
+    "best_exact": 73.30918891602796,
+    "best_exact_thresh": 0.2102687805891037,
+    "best_f1": 76.40390830324552,
+    "best_f1_thresh": 0.21093356609344482,
+    "exact": 39.80459866924956,
+    "f1": 43.74420008152357,
+    "total": 11873
+  },
+  "metrics_thresholded": {
+    "HasAns_exact": 66.8353576248313,
+    "HasAns_f1": 72.41681640758985,
+    "HasAns_total": 5928,
+    "NoAns_exact": 79.51219512195122,
+    "NoAns_f1": 79.51219512195122,
+    "NoAns_total": 5945,
+    "best_exact": 73.21654173334457,
+    "best_exact_thresh": 0.05072829872369766,
+    "best_f1": 75.97800788883933,
+    "best_f1_thresh": 0.06432481855154037,
+    "exact": 73.18285184873241,
+    "f1": 75.96958541768657,
+    "total": 11873
+  },
+  "model_name_or_path": "bert-base-uncased",
+  "no_answer_probability_threshold": 0.06458,
+  "run_identifier": "2026-03-05_05-41-04_baseline_squad_v2",
+  "training_energy": {
+    "energy_joules": 626216.6362235189,
+    "joules_per_training_example": 2.3764615731724232,
+    "joules_per_training_step": 19.010826843458375,
+    "joules_per_training_token": 0.01394371538403225,
+    "number_of_training_examples": 263508,
+    "number_of_training_steps": 32940,
+    "number_of_training_tokens": 44910314,
+    "phase": "training"
+  }
+}
