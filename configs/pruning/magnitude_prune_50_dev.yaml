@@ -1,0 +1,14 @@
+# Pruning configuration (dev subset)
+pruning_method: global_magnitude_pruning
+
+# Target global sparsity across pruned weights
+target_sparsity: 0.50
+
+# Module types to prune
+prune_linear_layers: true
+
+# Whether to include the QA head in pruning
+prune_question_answering_head: true
+
+# Whether to remove pruning reparameterization (make pruning permanent)
+remove_pruning_reparameterization: true

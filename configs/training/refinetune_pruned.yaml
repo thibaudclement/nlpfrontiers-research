@@ -1,0 +1,28 @@
+# Training configuration for refinetuning a pruned model (full run)
+random_seed: 42
+maximum_sequence_length: 384
+document_stride: 128
+pad_to_maximum_length: false
+learning_rate: 3.0e-05
+weight_decay: 0.01
+
+# Short refinetune baseline (1 epoch)
+number_of_training_epochs: 1
+per_device_training_batch_size: 8
+per_device_evaluation_batch_size: 16
+gradient_accumulation_steps: 1
+warmup_steps: 500
+logging_steps: 100
+
+# Keep checkpoints safe and small
+save_strategy: "steps"
+save_steps: 10000
+save_total_limit: 1
+save_only_model: true
+evaluation_strategy: "steps"
+evaluation_steps: 1000
+use_fp16: false
+use_bf16: false
+dataloader_num_workers: 2
+power_sampling_interval_seconds: 0.2
+no_answer_probability_threshold: 0.06458

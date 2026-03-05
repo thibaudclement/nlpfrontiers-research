@@ -1,0 +1,6 @@
+# Pruning configuration (full run)
+pruning_method: global_magnitude_pruning
+target_sparsity: 0.50
+prune_linear_layers: true
+prune_question_answering_head: true
+remove_pruning_reparameterization: true
