@@ -42,6 +42,13 @@ def plot_single_sequence_length_sweep(
     # Create a simple scatter-line plot and annotate each point by sequence length
     plt.figure()
     plt.plot(x_values, y_values, marker="o")
+    
+    # Add margins so point labels do not clip.
+    x_margin = (max(x_values) - min(x_values)) * 0.05
+    y_margin = (max(y_values) - min(y_values)) * 0.05
+
+    plt.xlim(min(x_values) - x_margin, max(x_values) + x_margin)
+    plt.ylim(min(y_values) - y_margin, max(y_values) + y_margin)
     plt.xlabel(x_axis_label)
     plt.ylabel(y_axis_label)
     plt.title(plot_title)
