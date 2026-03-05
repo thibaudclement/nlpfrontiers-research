@@ -8,9 +8,7 @@ sequence_lengths:
   - 288
   - 256
   - 224
-  - 208
   - 192
-  - 176
 
 # Base document stride before per-length clamping
 document_stride: 128
