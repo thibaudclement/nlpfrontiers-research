@@ -1,0 +1,37 @@
+run_identifier: 2026-03-05_15-07-51_baseline_squad_v2
+dataset:
+  dataset_name: squad_v2
+  huggingface_dataset_id: squad_v2
+  train_split_name: train
+  evaluation_split_name: validation
+  maximum_train_examples: null
+  maximum_evaluation_examples: null
+model:
+  model_name_or_path: bert-base-uncased
+  tokenizer_name_or_path: bert-base-uncased
+training:
+  random_seed: 42
+  maximum_sequence_length: 384
+  document_stride: 128
+  pad_to_maximum_length: false
+  learning_rate: 3.0e-05
+  weight_decay: 0.01
+  number_of_training_epochs: 2
+  per_device_training_batch_size: 8
+  per_device_evaluation_batch_size: 16
+  gradient_accumulation_steps: 1
+  warmup_steps: 500
+  logging_steps: 100
+  save_strategy: steps
+  save_steps: 10000
+  save_total_limit: 1
+  save_only_model: true
+  evaluation_strategy: steps
+  evaluation_steps: 1000
+  use_fp16: false
+  use_bf16: false
+  dataloader_num_workers: 2
+  power_sampling_interval_seconds: 0.2
+  no_answer_probability_threshold: 0.06458
+  freeze_strategy: freeze_bottom_k
+  freeze_bottom_k: 6
