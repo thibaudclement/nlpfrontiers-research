@@ -11,16 +11,3 @@ reports/
 .ipynb_checkpoints/
 .DS_Store
 *.safetensors
-
-
-
-
-# HF / caches
-.cache/
-.hf_cache/
-wandb/
-mlruns/
-
-# Outputs
-runs/
-
