@@ -14,7 +14,7 @@ sequence_lengths:
 document_stride: 128
 
 # Tokenization / batching settings
-pad_to_maximum_length: false
+pad_to_maximum_length: true
 pad_to_multiple_of: 8
 per_device_evaluation_batch_size: 16
 dataloader_num_workers: 2
