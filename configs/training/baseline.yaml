@@ -37,3 +37,5 @@ dataloader_num_workers: 2
 # Finer sampling for longer runs
 power_sampling_interval_seconds: 0.2
 
+# No-answer probability threshold for explicit empty-string predictions
+no_answer_probability_threshold: 0.06458

@@ -296,8 +296,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
             f"[debug] no_answer_probability samples: {no_answer_probabilities[:10]}"
         )
 
-    # Apply standard SQuAD v2 decision rule by converting probabilities into explicit empty-string predictions
-    # (Use dev-tuned threshold reported by metric as default)
+    # Apply a fixed no-answer probability threshold to create explicit empty-string predictions
     no_answer_probability_threshold = float(training_config.get("no_answer_probability_threshold", 0.06458))
     thresholded_predictions_by_example_id: Dict[str, str] = {}
 
@@ -313,7 +312,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
         f"[evaluation] applied no_answer_probability_threshold={no_answer_probability_threshold:.6f}",
     )
 
-    # Compute official SQuAD v2 metrics (raw probabilities, no explicit thresholding of prediction_text)
+    # Compute official SQuAD v2 metrics (raw predictions + probabilities)
     append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics (raw)")
     metrics = compute_squad_v2_metrics(
         predictions_by_example_id=predictions_by_example_id,
@@ -323,7 +322,7 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
     write_json_file(metrics, run_directory / "metrics.json")
     append_line_to_text_file(log_file_path, f"[evaluation] metrics: {metrics}")
 
-    # Compute official SQuAD v2 metrics using explicit no-answer strings (standard decision rule)
+    # Compute official SQuAD v2 metrics using explicit no-answer strings (thresholded)
     append_line_to_text_file(log_file_path, "[evaluation] computing SQuAD v2 metrics (thresholded)")
     thresholded_metrics = compute_squad_v2_metrics(
         predictions_by_example_id=thresholded_predictions_by_example_id,
@@ -332,7 +331,6 @@ def run_squad_v2_baseline_training_and_evaluation(arguments: argparse.Namespace)
     )
     write_json_file(thresholded_metrics, run_directory / "metrics_thresholded.json")
     append_line_to_text_file(log_file_path, f"[evaluation] metrics_thresholded: {thresholded_metrics}")
-
     # One-file summary for quick inspection
     summary = {
         "run_identifier": run_identifier,
