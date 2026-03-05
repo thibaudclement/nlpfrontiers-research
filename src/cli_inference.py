@@ -41,7 +41,7 @@ def run_squad_v2_sequence_length_sweep(arguments: argparse.Namespace) -> None:
     inference_config = read_yaml_file(arguments.inference_config_path)
 
     model_label = str(arguments.model_label)
-    sanitized_model_label = sanitize_label_for_file_name(model_label=model_label)
+    sanitized_model_label = sanitize_label_for_file_name(label=model_label)
 
     run_identifier = arguments.run_identifier or create_timestamped_run_identifier(
         f"sequence_length_sweep_{sanitized_model_label}"
