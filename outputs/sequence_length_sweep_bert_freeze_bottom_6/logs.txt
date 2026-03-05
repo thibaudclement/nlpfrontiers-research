@@ -1,0 +1,39 @@
+[run] 2026-03-05_23-10-14_sequence_length_sweep_bert_freeze_bottom_6
+[model_label] bert_freeze_bottom_6
+[checkpoint] runs/2026-03-05_15-07-51_baseline_squad_v2/huggingface_trainer/checkpoint-32940
+[sequence_length=384] starting evaluation
+[sequence_length=384] effective_document_stride=128
+[sequence_length=384] running warmup batches=10
+[sequence_length=384] starting inference energy meter
+[sequence_length=384] stopped inference energy meter
+[sequence_length=384] done f1=75.4956 exact=72.5006 joules_per_inference_token=0.00363992
+[sequence_length=320] starting evaluation
+[sequence_length=320] effective_document_stride=128
+[sequence_length=320] running warmup batches=10
+[sequence_length=320] starting inference energy meter
+[sequence_length=320] stopped inference energy meter
+[sequence_length=320] done f1=75.1324 exact=72.2143 joules_per_inference_token=0.00340307
+[sequence_length=288] starting evaluation
+[sequence_length=288] effective_document_stride=128
+[sequence_length=288] running warmup batches=10
+[sequence_length=288] starting inference energy meter
+[sequence_length=288] stopped inference energy meter
+[sequence_length=288] done f1=74.6583 exact=71.7510 joules_per_inference_token=0.00298866
+[sequence_length=256] starting evaluation
+[sequence_length=256] effective_document_stride=128
+[sequence_length=256] running warmup batches=10
+[sequence_length=256] starting inference energy meter
+[sequence_length=256] stopped inference energy meter
+[sequence_length=256] done f1=73.8985 exact=71.0520 joules_per_inference_token=0.00278304
+[sequence_length=224] starting evaluation
+[sequence_length=224] effective_document_stride=112
+[sequence_length=224] running warmup batches=10
+[sequence_length=224] starting inference energy meter
+[sequence_length=224] stopped inference energy meter
+[sequence_length=224] done f1=72.9045 exact=70.2518 joules_per_inference_token=0.00245787
+[sequence_length=192] starting evaluation
+[sequence_length=192] effective_document_stride=96
+[sequence_length=192] running warmup batches=10
+[sequence_length=192] starting inference energy meter
+[sequence_length=192] stopped inference energy meter
+[sequence_length=192] done f1=71.0137 exact=68.6263 joules_per_inference_token=0.00206495

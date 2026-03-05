@@ -1,0 +1,1806 @@
+{
+  "duration_seconds": 101.84902691841125,
+  "effective_document_stride": 128,
+  "energy_joules": 7313.476927361486,
+  "joules_per_feature_window": 0.5847506938003907,
+  "joules_per_inference_example": 0.6159754844909867,
+  "joules_per_inference_token": 0.003267686120348938,
+  "maximum_sequence_length": 320,
+  "number_of_energy_samples": 447,
+  "number_of_feature_windows": 12507,
+  "number_of_inference_tokens": 2238121,
+  "number_of_raw_evaluation_examples": 11873,
+  "number_of_samples": 447,
+  "phase": "inference",
+  "samples": [
+    {
+      "power_watts": 68.95,
+      "timestamp_seconds_since_start": 0.03206038475036621
+    },
+    {
+      "power_watts": 65.67,
+      "timestamp_seconds_since_start": 0.26014184951782227
+    },
+    {
+      "power_watts": 65.55,
+      "timestamp_seconds_since_start": 0.48717832565307617
+    },
+    {
+      "power_watts": 64.63,
+      "timestamp_seconds_since_start": 0.7145209312438965
+    },
+    {
+      "power_watts": 66.03,
+      "timestamp_seconds_since_start": 0.9416656494140625
+    },
+    {
+      "power_watts": 69.51,
+      "timestamp_seconds_since_start": 1.1695020198822021
+    },
+    {
+      "power_watts": 72.25,
+      "timestamp_seconds_since_start": 1.3978657722473145
+    },
+    {
+      "power_watts": 71.47,
+      "timestamp_seconds_since_start": 1.6251533031463623
+    },
+    {
+      "power_watts": 72.09,
+      "timestamp_seconds_since_start": 1.8525290489196777
+    },
+    {
+      "power_watts": 72.04,
+      "timestamp_seconds_since_start": 2.080181360244751
+    },
+    {
+      "power_watts": 71.84,
+      "timestamp_seconds_since_start": 2.307321786880493
+    },
+    {
+      "power_watts": 71.81,
+      "timestamp_seconds_since_start": 2.538632869720459
+    },
+    {
+      "power_watts": 72.69,
+      "timestamp_seconds_since_start": 2.766601324081421
+    },
+    {
+      "power_watts": 72.86,
+      "timestamp_seconds_since_start": 2.9940836429595947
+    },
+    {
+      "power_watts": 72.13,
+      "timestamp_seconds_since_start": 3.22126841545105
+    },
+    {
+      "power_watts": 72.55,
+      "timestamp_seconds_since_start": 3.4483656883239746
+    },
+    {
+      "power_watts": 72.54,
+      "timestamp_seconds_since_start": 3.676730155944824
+    },
+    {
+      "power_watts": 72.47,
+      "timestamp_seconds_since_start": 3.9083330631256104
+    },
+    {
+      "power_watts": 71.93,
+      "timestamp_seconds_since_start": 4.13540506362915
+    },
+    {
+      "power_watts": 72.4,
+      "timestamp_seconds_since_start": 4.363019943237305
+    },
+    {
+      "power_watts": 71.71,
+      "timestamp_seconds_since_start": 4.590189218521118
+    },
+    {
+      "power_watts": 72.21,
+      "timestamp_seconds_since_start": 4.8171608448028564
+    },
+    {
+      "power_watts": 71.44,
+      "timestamp_seconds_since_start": 5.044933080673218
+    },
+    {
+      "power_watts": 71.52,
+      "timestamp_seconds_since_start": 5.272403717041016
+    },
+    {
+      "power_watts": 71.52,
+      "timestamp_seconds_since_start": 5.4998040199279785
+    },
+    {
+      "power_watts": 71.4,
+      "timestamp_seconds_since_start": 5.727212429046631
+    },
+    {
+      "power_watts": 71.37,
+      "timestamp_seconds_since_start": 5.955059766769409
+    },
+    {
+      "power_watts": 71.18,
+      "timestamp_seconds_since_start": 6.183674335479736
+    },
+    {
+      "power_watts": 71.51,
+      "timestamp_seconds_since_start": 6.410584211349487
+    },
+    {
+      "power_watts": 72.09,
+      "timestamp_seconds_since_start": 6.637475967407227
+    },
+    {
+      "power_watts": 72.17,
+      "timestamp_seconds_since_start": 6.864700794219971
+    },
+    {
+      "power_watts": 72.0,
+      "timestamp_seconds_since_start": 7.092146158218384
+    },
+    {
+      "power_watts": 72.71,
+      "timestamp_seconds_since_start": 7.319241285324097
+    },
+    {
+      "power_watts": 72.34,
+      "timestamp_seconds_since_start": 7.546837091445923
+    },
+    {
+      "power_watts": 72.59,
+      "timestamp_seconds_since_start": 7.77466082572937
+    },
+    {
+      "power_watts": 72.51,
+      "timestamp_seconds_since_start": 8.002567529678345
+    },
+    {
+      "power_watts": 72.39,
+      "timestamp_seconds_since_start": 8.229753971099854
+    },
+    {
+      "power_watts": 72.2,
+      "timestamp_seconds_since_start": 8.45808720588684
+    },
+    {
+      "power_watts": 72.37,
+      "timestamp_seconds_since_start": 8.690182447433472
+    },
+    {
+      "power_watts": 72.5,
+      "timestamp_seconds_since_start": 8.917188167572021
+    },
+    {
+      "power_watts": 72.09,
+      "timestamp_seconds_since_start": 9.14423155784607
+    },
+    {
+      "power_watts": 72.14,
+      "timestamp_seconds_since_start": 9.371687173843384
+    },
+    {
+      "power_watts": 71.74,
+      "timestamp_seconds_since_start": 9.598719835281372
+    },
+    {
+      "power_watts": 71.92,
+      "timestamp_seconds_since_start": 9.829410076141357
+    },
+    {
+      "power_watts": 71.73,
+      "timestamp_seconds_since_start": 10.058131456375122
+    },
+    {
+      "power_watts": 71.83,
+      "timestamp_seconds_since_start": 10.286743402481079
+    },
+    {
+      "power_watts": 71.61,
+      "timestamp_seconds_since_start": 10.513765096664429
+    },
+    {
+      "power_watts": 72.58,
+      "timestamp_seconds_since_start": 10.740838289260864
+    },
+    {
+      "power_watts": 72.25,
+      "timestamp_seconds_since_start": 10.967886447906494
+    },
+    {
+      "power_watts": 72.95,
+      "timestamp_seconds_since_start": 11.196109771728516
+    },
+    {
+      "power_watts": 72.5,
+      "timestamp_seconds_since_start": 11.422940731048584
+    },
+    {
+      "power_watts": 72.7,
+      "timestamp_seconds_since_start": 11.650644063949585
+    },
+    {
+      "power_watts": 71.67,
+      "timestamp_seconds_since_start": 11.877671241760254
+    },
+    {
+      "power_watts": 71.82,
+      "timestamp_seconds_since_start": 12.108506441116333
+    },
+    {
+      "power_watts": 71.56,
+      "timestamp_seconds_since_start": 12.337125301361084
+    },
+    {
+      "power_watts": 71.92,
+      "timestamp_seconds_since_start": 12.564793109893799
+    },
+    {
+      "power_watts": 72.07,
+      "timestamp_seconds_since_start": 12.792054891586304
+    },
+    {
+      "power_watts": 72.54,
+      "timestamp_seconds_since_start": 13.02011752128601
+    },
+    {
+      "power_watts": 72.13,
+      "timestamp_seconds_since_start": 13.248514413833618
+    },
+    {
+      "power_watts": 71.98,
+      "timestamp_seconds_since_start": 13.47791862487793
+    },
+    {
+      "power_watts": 72.36,
+      "timestamp_seconds_since_start": 13.705626010894775
+    },
+    {
+      "power_watts": 72.23,
+      "timestamp_seconds_since_start": 13.93272352218628
+    },
+    {
+      "power_watts": 72.26,
+      "timestamp_seconds_since_start": 14.160465240478516
+    },
+    {
+      "power_watts": 72.71,
+      "timestamp_seconds_since_start": 14.392802715301514
+    },
+    {
+      "power_watts": 73.17,
+      "timestamp_seconds_since_start": 14.621229410171509
+    },
+    {
+      "power_watts": 72.54,
+      "timestamp_seconds_since_start": 14.847774505615234
+    },
+    {
+      "power_watts": 72.48,
+      "timestamp_seconds_since_start": 15.075690031051636
+    },
+    {
+      "power_watts": 71.5,
+      "timestamp_seconds_since_start": 15.303473472595215
+    },
+    {
+      "power_watts": 71.98,
+      "timestamp_seconds_since_start": 15.532873153686523
+    },
+    {
+      "power_watts": 71.97,
+      "timestamp_seconds_since_start": 15.761639595031738
+    },
+    {
+      "power_watts": 72.21,
+      "timestamp_seconds_since_start": 15.988971471786499
+    },
+    {
+      "power_watts": 71.69,
+      "timestamp_seconds_since_start": 16.216171979904175
+    },
+    {
+      "power_watts": 72.52,
+      "timestamp_seconds_since_start": 16.443113803863525
+    },
+    {
+      "power_watts": 71.43,
+      "timestamp_seconds_since_start": 16.674411058425903
+    },
+    {
+      "power_watts": 71.92,
+      "timestamp_seconds_since_start": 16.90269708633423
+    },
+    {
+      "power_watts": 71.84,
+      "timestamp_seconds_since_start": 17.129937410354614
+    },
+    {
+      "power_watts": 72.19,
+      "timestamp_seconds_since_start": 17.357101678848267
+    },
+    {
+      "power_watts": 71.78,
+      "timestamp_seconds_since_start": 17.587448120117188
+    },
+    {
+      "power_watts": 72.7,
+      "timestamp_seconds_since_start": 17.818650484085083
+    },
+    {
+      "power_watts": 71.73,
+      "timestamp_seconds_since_start": 18.045785427093506
+    },
+    {
+      "power_watts": 72.12,
+      "timestamp_seconds_since_start": 18.272754669189453
+    },
+    {
+      "power_watts": 71.61,
+      "timestamp_seconds_since_start": 18.500225067138672
+    },
+    {
+      "power_watts": 72.1,
+      "timestamp_seconds_since_start": 18.72709059715271
+    },
+    {
+      "power_watts": 71.29,
+      "timestamp_seconds_since_start": 18.956485509872437
+    },
+    {
+      "power_watts": 72.25,
+      "timestamp_seconds_since_start": 19.18342900276184
+    },
+    {
+      "power_watts": 72.21,
+      "timestamp_seconds_since_start": 19.411030054092407
+    },
+    {
+      "power_watts": 72.49,
+      "timestamp_seconds_since_start": 19.638220071792603
+    },
+    {
+      "power_watts": 71.96,
+      "timestamp_seconds_since_start": 19.86890697479248
+    },
+    {
+      "power_watts": 72.79,
+      "timestamp_seconds_since_start": 20.097310781478882
+    },
+    {
+      "power_watts": 72.5,
+      "timestamp_seconds_since_start": 20.324153423309326
+    },
+    {
+      "power_watts": 72.64,
+      "timestamp_seconds_since_start": 20.550727367401123
+    },
+    {
+      "power_watts": 72.06,
+      "timestamp_seconds_since_start": 20.777382373809814
+    },
+    {
+      "power_watts": 72.64,
+      "timestamp_seconds_since_start": 21.00701403617859
+    },
+    {
+      "power_watts": 72.08,
+      "timestamp_seconds_since_start": 21.235180377960205
+    },
+    {
+      "power_watts": 72.28,
+      "timestamp_seconds_since_start": 21.462592601776123
+    },
+    {
+      "power_watts": 71.93,
+      "timestamp_seconds_since_start": 21.689850568771362
+    },
+    {
+      "power_watts": 72.15,
+      "timestamp_seconds_since_start": 21.919689655303955
+    },
+    {
+      "power_watts": 71.28,
+      "timestamp_seconds_since_start": 22.147388696670532
+    },
+    {
+      "power_watts": 72.09,
+      "timestamp_seconds_since_start": 22.374916076660156
+    },
+    {
+      "power_watts": 71.59,
+      "timestamp_seconds_since_start": 22.60199809074402
+    },
+    {
+      "power_watts": 71.9,
+      "timestamp_seconds_since_start": 22.829535007476807
+    },
+    {
+      "power_watts": 71.05,
+      "timestamp_seconds_since_start": 23.05858826637268
+    },
+    {
+      "power_watts": 71.83,
+      "timestamp_seconds_since_start": 23.2865207195282
+    },
+    {
+      "power_watts": 71.0,
+      "timestamp_seconds_since_start": 23.51407241821289
+    },
+    {
+      "power_watts": 71.28,
+      "timestamp_seconds_since_start": 23.740776538848877
+    },
+    {
+      "power_watts": 70.6,
+      "timestamp_seconds_since_start": 23.973438262939453
+    },
+    {
+      "power_watts": 71.89,
+      "timestamp_seconds_since_start": 24.201090097427368
+    },
+    {
+      "power_watts": 71.65,
+      "timestamp_seconds_since_start": 24.427774667739868
+    },
+    {
+      "power_watts": 72.11,
+      "timestamp_seconds_since_start": 24.65440034866333
+    },
+    {
+      "power_watts": 71.9,
+      "timestamp_seconds_since_start": 24.883319854736328
+    },
+    {
+      "power_watts": 73.01,
+      "timestamp_seconds_since_start": 25.11307120323181
+    },
+    {
+      "power_watts": 72.5,
+      "timestamp_seconds_since_start": 25.340051889419556
+    },
+    {
+      "power_watts": 72.46,
+      "timestamp_seconds_since_start": 25.567434310913086
+    },
+    {
+      "power_watts": 72.08,
+      "timestamp_seconds_since_start": 25.794838190078735
+    },
+    {
+      "power_watts": 71.56,
+      "timestamp_seconds_since_start": 26.023677825927734
+    },
+    {
+      "power_watts": 71.64,
+      "timestamp_seconds_since_start": 26.250563621520996
+    },
+    {
+      "power_watts": 71.5,
+      "timestamp_seconds_since_start": 26.47732162475586
+    },
+    {
+      "power_watts": 71.5,
+      "timestamp_seconds_since_start": 26.70455527305603
+    },
+    {
+      "power_watts": 71.45,
+      "timestamp_seconds_since_start": 26.932234048843384
+    },
+    {
+      "power_watts": 72.37,
+      "timestamp_seconds_since_start": 27.159058332443237
+    },
+    {
+      "power_watts": 71.81,
+      "timestamp_seconds_since_start": 27.38600778579712
+    },
+    {
+      "power_watts": 72.08,
+      "timestamp_seconds_since_start": 27.61269235610962
+    },
+    {
+      "power_watts": 72.07,
+      "timestamp_seconds_since_start": 27.841174125671387
+    },
+    {
+      "power_watts": 72.42,
+      "timestamp_seconds_since_start": 28.06905460357666
+    },
+    {
+      "power_watts": 71.58,
+      "timestamp_seconds_since_start": 28.29671049118042
+    },
+    {
+      "power_watts": 72.3,
+      "timestamp_seconds_since_start": 28.524168252944946
+    },
+    {
+      "power_watts": 71.54,
+      "timestamp_seconds_since_start": 28.7555832862854
+    },
+    {
+      "power_watts": 71.85,
+      "timestamp_seconds_since_start": 28.98261857032776
+    },
+    {
+      "power_watts": 71.65,
+      "timestamp_seconds_since_start": 29.209360361099243
+    },
+    {
+      "power_watts": 72.53,
+      "timestamp_seconds_since_start": 29.436686038970947
+    },
+    {
+      "power_watts": 71.64,
+      "timestamp_seconds_since_start": 29.6667320728302
+    },
+    {
+      "power_watts": 72.29,
+      "timestamp_seconds_since_start": 29.893832206726074
+    },
+    {
+      "power_watts": 71.52,
+      "timestamp_seconds_since_start": 30.12088441848755
+    },
+    {
+      "power_watts": 71.91,
+      "timestamp_seconds_since_start": 30.348124504089355
+    },
+    {
+      "power_watts": 71.5,
+      "timestamp_seconds_since_start": 30.57551884651184
+    },
+    {
+      "power_watts": 72.36,
+      "timestamp_seconds_since_start": 30.802675485610962
+    },
+    {
+      "power_watts": 71.61,
+      "timestamp_seconds_since_start": 31.030554056167603
+    },
+    {
+      "power_watts": 71.78,
+      "timestamp_seconds_since_start": 31.25762367248535
+    },
+    {
+      "power_watts": 71.44,
+      "timestamp_seconds_since_start": 31.488251209259033
+    },
+    {
+      "power_watts": 71.81,
+      "timestamp_seconds_since_start": 31.71595525741577
+    },
+    {
+      "power_watts": 71.78,
+      "timestamp_seconds_since_start": 31.942946434020996
+    },
+    {
+      "power_watts": 71.71,
+      "timestamp_seconds_since_start": 32.17045307159424
+    },
+    {
+      "power_watts": 71.61,
+      "timestamp_seconds_since_start": 32.39907908439636
+    },
+    {
+      "power_watts": 71.67,
+      "timestamp_seconds_since_start": 32.62756896018982
+    },
+    {
+      "power_watts": 72.45,
+      "timestamp_seconds_since_start": 32.85476589202881
+    },
+    {
+      "power_watts": 71.81,
+      "timestamp_seconds_since_start": 33.08237266540527
+    },
+    {
+      "power_watts": 71.82,
+      "timestamp_seconds_since_start": 33.310662031173706
+    },
+    {
+      "power_watts": 71.69,
+      "timestamp_seconds_since_start": 33.53939771652222
+    },
+    {
+      "power_watts": 71.89,
+      "timestamp_seconds_since_start": 33.7662239074707
+    },
+    {
+      "power_watts": 71.58,
+      "timestamp_seconds_since_start": 33.99357724189758
+    },
+    {
+      "power_watts": 72.39,
+      "timestamp_seconds_since_start": 34.220158100128174
+    },
+    {
+      "power_watts": 71.23,
+      "timestamp_seconds_since_start": 34.45008111000061
+    },
+    {
+      "power_watts": 71.94,
+      "timestamp_seconds_since_start": 34.67720031738281
+    },
+    {
+      "power_watts": 71.34,
+      "timestamp_seconds_since_start": 34.90438914299011
+    },
+    {
+      "power_watts": 71.83,
+      "timestamp_seconds_since_start": 35.13192439079285
+    },
+    {
+      "power_watts": 71.48,
+      "timestamp_seconds_since_start": 35.35911273956299
+    },
+    {
+      "power_watts": 72.89,
+      "timestamp_seconds_since_start": 35.58606314659119
+    },
+    {
+      "power_watts": 71.7,
+      "timestamp_seconds_since_start": 35.81375288963318
+    },
+    {
+      "power_watts": 72.17,
+      "timestamp_seconds_since_start": 36.04141187667847
+    },
+    {
+      "power_watts": 71.76,
+      "timestamp_seconds_since_start": 36.268758058547974
+    },
+    {
+      "power_watts": 72.14,
+      "timestamp_seconds_since_start": 36.49594306945801
+    },
+    {
+      "power_watts": 71.73,
+      "timestamp_seconds_since_start": 36.72334885597229
+    },
+    {
+      "power_watts": 71.67,
+      "timestamp_seconds_since_start": 36.95107340812683
+    },
+    {
+      "power_watts": 71.26,
+      "timestamp_seconds_since_start": 37.182700634002686
+    },
+    {
+      "power_watts": 71.77,
+      "timestamp_seconds_since_start": 37.409828901290894
+    },
+    {
+      "power_watts": 72.65,
+      "timestamp_seconds_since_start": 37.63726186752319
+    },
+    {
+      "power_watts": 71.99,
+      "timestamp_seconds_since_start": 37.8646936416626
+    },
+    {
+      "power_watts": 72.09,
+      "timestamp_seconds_since_start": 38.096757888793945
+    },
+    {
+      "power_watts": 72.12,
+      "timestamp_seconds_since_start": 38.324519634246826
+    },
+    {
+      "power_watts": 72.17,
+      "timestamp_seconds_since_start": 38.552536964416504
+    },
+    {
+      "power_watts": 71.98,
+      "timestamp_seconds_since_start": 38.7805495262146
+    },
+    {
+      "power_watts": 72.84,
+      "timestamp_seconds_since_start": 39.01203417778015
+    },
+    {
+      "power_watts": 71.56,
+      "timestamp_seconds_since_start": 39.23944020271301
+    },
+    {
+      "power_watts": 72.07,
+      "timestamp_seconds_since_start": 39.466538190841675
+    },
+    {
+      "power_watts": 71.6,
+      "timestamp_seconds_since_start": 39.693490743637085
+    },
+    {
+      "power_watts": 71.81,
+      "timestamp_seconds_since_start": 39.92380499839783
+    },
+    {
+      "power_watts": 71.36,
+      "timestamp_seconds_since_start": 40.151654958724976
+    },
+    {
+      "power_watts": 72.43,
+      "timestamp_seconds_since_start": 40.37842273712158
+    },
+    {
+      "power_watts": 71.57,
+      "timestamp_seconds_since_start": 40.605778217315674
+    },
+    {
+      "power_watts": 71.55,
+      "timestamp_seconds_since_start": 40.834404706954956
+    },
+    {
+      "power_watts": 71.18,
+      "timestamp_seconds_since_start": 41.06197190284729
+    },
+    {
+      "power_watts": 71.62,
+      "timestamp_seconds_since_start": 41.28917336463928
+    },
+    {
+      "power_watts": 72.14,
+      "timestamp_seconds_since_start": 41.5162878036499
+    },
+    {
+      "power_watts": 71.52,
+      "timestamp_seconds_since_start": 41.74458575248718
+    },
+    {
+      "power_watts": 71.69,
+      "timestamp_seconds_since_start": 41.97284936904907
+    },
+    {
+      "power_watts": 71.56,
+      "timestamp_seconds_since_start": 42.2000789642334
+    },
+    {
+      "power_watts": 71.66,
+      "timestamp_seconds_since_start": 42.42739653587341
+    },
+    {
+      "power_watts": 71.68,
+      "timestamp_seconds_since_start": 42.655268907547
+    },
+    {
+      "power_watts": 72.38,
+      "timestamp_seconds_since_start": 42.883124351501465
+    },
+    {
+      "power_watts": 71.93,
+      "timestamp_seconds_since_start": 43.1101291179657
+    },
+    {
+      "power_watts": 72.33,
+      "timestamp_seconds_since_start": 43.33751726150513
+    },
+    {
+      "power_watts": 71.61,
+      "timestamp_seconds_since_start": 43.5657742023468
+    },
+    {
+      "power_watts": 71.45,
+      "timestamp_seconds_since_start": 43.79396867752075
+    },
+    {
+      "power_watts": 71.44,
+      "timestamp_seconds_since_start": 44.02113676071167
+    },
+    {
+      "power_watts": 72.19,
+      "timestamp_seconds_since_start": 44.248425006866455
+    },
+    {
+      "power_watts": 71.57,
+      "timestamp_seconds_since_start": 44.47675347328186
+    },
+    {
+      "power_watts": 72.36,
+      "timestamp_seconds_since_start": 44.70497012138367
+    },
+    {
+      "power_watts": 71.89,
+      "timestamp_seconds_since_start": 44.93208646774292
+    },
+    {
+      "power_watts": 72.09,
+      "timestamp_seconds_since_start": 45.15950655937195
+    },
+    {
+      "power_watts": 71.9,
+      "timestamp_seconds_since_start": 45.388267040252686
+    },
+    {
+      "power_watts": 71.76,
+      "timestamp_seconds_since_start": 45.61710238456726
+    },
+    {
+      "power_watts": 72.01,
+      "timestamp_seconds_since_start": 45.845134258270264
+    },
+    {
+      "power_watts": 71.79,
+      "timestamp_seconds_since_start": 46.07265520095825
+    },
+    {
+      "power_watts": 71.69,
+      "timestamp_seconds_since_start": 46.30373549461365
+    },
+    {
+      "power_watts": 71.96,
+      "timestamp_seconds_since_start": 46.5313835144043
+    },
+    {
+      "power_watts": 72.56,
+      "timestamp_seconds_since_start": 46.758639335632324
+    },
+    {
+      "power_watts": 72.18,
+      "timestamp_seconds_since_start": 46.98559069633484
+    },
+    {
+      "power_watts": 72.6,
+      "timestamp_seconds_since_start": 47.21296429634094
+    },
+    {
+      "power_watts": 71.89,
+      "timestamp_seconds_since_start": 47.44463920593262
+    },
+    {
+      "power_watts": 71.93,
+      "timestamp_seconds_since_start": 47.67250847816467
+    },
+    {
+      "power_watts": 71.83,
+      "timestamp_seconds_since_start": 47.90026235580444
+    },
+    {
+      "power_watts": 72.25,
+      "timestamp_seconds_since_start": 48.12858819961548
+    },
+    {
+      "power_watts": 71.5,
+      "timestamp_seconds_since_start": 48.35694670677185
+    },
+    {
+      "power_watts": 72.25,
+      "timestamp_seconds_since_start": 48.58462715148926
+    },
+    {
+      "power_watts": 71.28,
+      "timestamp_seconds_since_start": 48.81189966201782
+    },
+    {
+      "power_watts": 71.65,
+      "timestamp_seconds_since_start": 49.03978657722473
+    },
+    {
+      "power_watts": 71.55,
+      "timestamp_seconds_since_start": 49.270543813705444
+    },
+    {
+      "power_watts": 72.1,
+      "timestamp_seconds_since_start": 49.49749445915222
+    },
+    {
+      "power_watts": 71.95,
+      "timestamp_seconds_since_start": 49.72461128234863
+    },
+    {
+      "power_watts": 71.72,
+      "timestamp_seconds_since_start": 49.95166826248169
+    },
+    {
+      "power_watts": 71.58,
+      "timestamp_seconds_since_start": 50.183250188827515
+    },
+    {
+      "power_watts": 71.92,
+      "timestamp_seconds_since_start": 50.4102144241333
+    },
+    {
+      "power_watts": 72.54,
+      "timestamp_seconds_since_start": 50.63805866241455
+    },
+    {
+      "power_watts": 71.88,
+      "timestamp_seconds_since_start": 50.864951848983765
+    },
+    {
+      "power_watts": 72.11,
+      "timestamp_seconds_since_start": 51.09810972213745
+    },
+    {
+      "power_watts": 71.67,
+      "timestamp_seconds_since_start": 51.3258638381958
+    },
+    {
+      "power_watts": 71.95,
+      "timestamp_seconds_since_start": 51.5533549785614
+    },
+    {
+      "power_watts": 71.78,
+      "timestamp_seconds_since_start": 51.7803316116333
+    },
+    {
+      "power_watts": 72.82,
+      "timestamp_seconds_since_start": 52.01203894615173
+    },
+    {
+      "power_watts": 72.01,
+      "timestamp_seconds_since_start": 52.23962593078613
+    },
+    {
+      "power_watts": 72.66,
+      "timestamp_seconds_since_start": 52.46662187576294
+    },
+    {
+      "power_watts": 71.88,
+      "timestamp_seconds_since_start": 52.69409537315369
+    },
+    {
+      "power_watts": 72.1,
+      "timestamp_seconds_since_start": 52.921255588531494
+    },
+    {
+      "power_watts": 71.82,
+      "timestamp_seconds_since_start": 53.148258209228516
+    },
+    {
+      "power_watts": 72.53,
+      "timestamp_seconds_since_start": 53.374910831451416
+    },
+    {
+      "power_watts": 72.26,
+      "timestamp_seconds_since_start": 53.60257911682129
+    },
+    {
+      "power_watts": 72.17,
+      "timestamp_seconds_since_start": 53.830331563949585
+    },
+    {
+      "power_watts": 72.12,
+      "timestamp_seconds_since_start": 54.057477712631226
+    },
+    {
+      "power_watts": 72.0,
+      "timestamp_seconds_since_start": 54.2846200466156
+    },
+    {
+      "power_watts": 72.04,
+      "timestamp_seconds_since_start": 54.51161074638367
+    },
+    {
+      "power_watts": 71.82,
+      "timestamp_seconds_since_start": 54.739046812057495
+    },
+    {
+      "power_watts": 72.72,
+      "timestamp_seconds_since_start": 54.96601486206055
+    },
+    {
+      "power_watts": 72.49,
+      "timestamp_seconds_since_start": 55.193180084228516
+    },
+    {
+      "power_watts": 72.8,
+      "timestamp_seconds_since_start": 55.420777320861816
+    },
+    {
+      "power_watts": 71.49,
+      "timestamp_seconds_since_start": 55.64802002906799
+    },
+    {
+      "power_watts": 71.97,
+      "timestamp_seconds_since_start": 55.8755202293396
+    },
+    {
+      "power_watts": 70.95,
+      "timestamp_seconds_since_start": 56.102680683135986
+    },
+    {
+      "power_watts": 71.21,
+      "timestamp_seconds_since_start": 56.33045697212219
+    },
+    {
+      "power_watts": 70.98,
+      "timestamp_seconds_since_start": 56.5577974319458
+    },
+    {
+      "power_watts": 72.25,
+      "timestamp_seconds_since_start": 56.785056829452515
+    },
+    {
+      "power_watts": 72.34,
+      "timestamp_seconds_since_start": 57.01218032836914
+    },
+    {
+      "power_watts": 72.07,
+      "timestamp_seconds_since_start": 57.23951578140259
+    },
+    {
+      "power_watts": 71.87,
+      "timestamp_seconds_since_start": 57.46626377105713
+    },
+    {
+      "power_watts": 71.6,
+      "timestamp_seconds_since_start": 57.693256855010986
+    },
+    {
+      "power_watts": 71.88,
+      "timestamp_seconds_since_start": 57.92057204246521
+    },
+    {
+      "power_watts": 71.46,
+      "timestamp_seconds_since_start": 58.14866232872009
+    },
+    {
+      "power_watts": 71.88,
+      "timestamp_seconds_since_start": 58.37566041946411
+    },
+    {
+      "power_watts": 71.96,
+      "timestamp_seconds_since_start": 58.6030490398407
+    },
+    {
+      "power_watts": 72.47,
+      "timestamp_seconds_since_start": 58.830092668533325
+    },
+    {
+      "power_watts": 72.19,
+      "timestamp_seconds_since_start": 59.06091284751892
+    },
+    {
+      "power_watts": 72.94,
+      "timestamp_seconds_since_start": 59.28839612007141
+    },
+    {
+      "power_watts": 72.06,
+      "timestamp_seconds_since_start": 59.5157995223999
+    },
+    {
+      "power_watts": 71.81,
+      "timestamp_seconds_since_start": 59.74285888671875
+    },
+    {
+      "power_watts": 71.72,
+      "timestamp_seconds_since_start": 59.970032691955566
+    },
+    {
+      "power_watts": 71.92,
+      "timestamp_seconds_since_start": 60.19681477546692
+    },
+    {
+      "power_watts": 72.36,
+      "timestamp_seconds_since_start": 60.42375659942627
+    },
+    {
+      "power_watts": 72.42,
+      "timestamp_seconds_since_start": 60.65044283866882
+    },
+    {
+      "power_watts": 72.67,
+      "timestamp_seconds_since_start": 60.878469467163086
+    },
+    {
+      "power_watts": 71.97,
+      "timestamp_seconds_since_start": 61.10631442070007
+    },
+    {
+      "power_watts": 71.98,
+      "timestamp_seconds_since_start": 61.33412432670593
+    },
+    {
+      "power_watts": 71.41,
+      "timestamp_seconds_since_start": 61.563318967819214
+    },
+    {
+      "power_watts": 71.57,
+      "timestamp_seconds_since_start": 61.79196214675903
+    },
+    {
+      "power_watts": 71.51,
+      "timestamp_seconds_since_start": 62.01902675628662
+    },
+    {
+      "power_watts": 72.57,
+      "timestamp_seconds_since_start": 62.24606990814209
+    },
+    {
+      "power_watts": 72.23,
+      "timestamp_seconds_since_start": 62.47395372390747
+    },
+    {
+      "power_watts": 72.82,
+      "timestamp_seconds_since_start": 62.701683044433594
+    },
+    {
+      "power_watts": 72.49,
+      "timestamp_seconds_since_start": 62.92871642112732
+    },
+    {
+      "power_watts": 72.24,
+      "timestamp_seconds_since_start": 63.156333446502686
+    },
+    {
+      "power_watts": 72.14,
+      "timestamp_seconds_since_start": 63.38799786567688
+    },
+    {
+      "power_watts": 72.01,
+      "timestamp_seconds_since_start": 63.616029262542725
+    },
+    {
+      "power_watts": 72.32,
+      "timestamp_seconds_since_start": 63.84269952774048
+    },
+    {
+      "power_watts": 72.25,
+      "timestamp_seconds_since_start": 64.06959509849548
+    },
+    {
+      "power_watts": 72.72,
+      "timestamp_seconds_since_start": 64.29792165756226
+    },
+    {
+      "power_watts": 72.32,
+      "timestamp_seconds_since_start": 64.52534532546997
+    },
+    {
+      "power_watts": 72.95,
+      "timestamp_seconds_since_start": 64.75231289863586
+    },
+    {
+      "power_watts": 71.88,
+      "timestamp_seconds_since_start": 64.9790906906128
+    },
+    {
+      "power_watts": 71.9,
+      "timestamp_seconds_since_start": 65.20821166038513
+    },
+    {
+      "power_watts": 71.64,
+      "timestamp_seconds_since_start": 65.43660163879395
+    },
+    {
+      "power_watts": 71.93,
+      "timestamp_seconds_since_start": 65.66356444358826
+    },
+    {
+      "power_watts": 71.61,
+      "timestamp_seconds_since_start": 65.89030432701111
+    },
+    {
+      "power_watts": 72.41,
+      "timestamp_seconds_since_start": 66.11918711662292
+    },
+    {
+      "power_watts": 72.5,
+      "timestamp_seconds_since_start": 66.34661602973938
+    },
+    {
+      "power_watts": 72.38,
+      "timestamp_seconds_since_start": 66.57356691360474
+    },
+    {
+      "power_watts": 72.23,
+      "timestamp_seconds_since_start": 66.80464482307434
+    },
+    {
+      "power_watts": 72.15,
+      "timestamp_seconds_since_start": 67.03165626525879
+    },
+    {
+      "power_watts": 72.34,
+      "timestamp_seconds_since_start": 67.25924158096313
+    },
+    {
+      "power_watts": 71.59,
+      "timestamp_seconds_since_start": 67.48663926124573
+    },
+    {
+      "power_watts": 71.39,
+      "timestamp_seconds_since_start": 67.71437811851501
+    },
+    {
+      "power_watts": 71.27,
+      "timestamp_seconds_since_start": 67.94150471687317
+    },
+    {
+      "power_watts": 71.2,
+      "timestamp_seconds_since_start": 68.16825819015503
+    },
+    {
+      "power_watts": 70.86,
+      "timestamp_seconds_since_start": 68.3952271938324
+    },
+    {
+      "power_watts": 71.79,
+      "timestamp_seconds_since_start": 68.62272047996521
+    },
+    {
+      "power_watts": 72.26,
+      "timestamp_seconds_since_start": 68.8498170375824
+    },
+    {
+      "power_watts": 72.2,
+      "timestamp_seconds_since_start": 69.07713317871094
+    },
+    {
+      "power_watts": 72.48,
+      "timestamp_seconds_since_start": 69.3067696094513
+    },
+    {
+      "power_watts": 72.26,
+      "timestamp_seconds_since_start": 69.5346348285675
+    },
+    {
+      "power_watts": 72.54,
+      "timestamp_seconds_since_start": 69.76177096366882
+    },
+    {
+      "power_watts": 71.66,
+      "timestamp_seconds_since_start": 69.98879551887512
+    },
+    {
+      "power_watts": 71.25,
+      "timestamp_seconds_since_start": 70.22080826759338
+    },
+    {
+      "power_watts": 71.2,
+      "timestamp_seconds_since_start": 70.44812631607056
+    },
+    {
+      "power_watts": 71.6,
+      "timestamp_seconds_since_start": 70.6751217842102
+    },
+    {
+      "power_watts": 71.29,
+      "timestamp_seconds_since_start": 70.90178155899048
+    },
+    {
+      "power_watts": 72.24,
+      "timestamp_seconds_since_start": 71.13326740264893
+    },
+    {
+      "power_watts": 72.7,
+      "timestamp_seconds_since_start": 71.35978984832764
+    },
+    {
+      "power_watts": 72.47,
+      "timestamp_seconds_since_start": 71.58667516708374
+    },
+    {
+      "power_watts": 72.46,
+      "timestamp_seconds_since_start": 71.81332874298096
+    },
+    {
+      "power_watts": 71.58,
+      "timestamp_seconds_since_start": 72.04304146766663
+    },
+    {
+      "power_watts": 71.67,
+      "timestamp_seconds_since_start": 72.27020382881165
+    },
+    {
+      "power_watts": 71.26,
+      "timestamp_seconds_since_start": 72.49689555168152
+    },
+    {
+      "power_watts": 71.57,
+      "timestamp_seconds_since_start": 72.72440671920776
+    },
+    {
+      "power_watts": 71.21,
+      "timestamp_seconds_since_start": 72.95258212089539
+    },
+    {
+      "power_watts": 71.69,
+      "timestamp_seconds_since_start": 73.1798894405365
+    },
+    {
+      "power_watts": 72.0,
+      "timestamp_seconds_since_start": 73.40662217140198
+    },
+    {
+      "power_watts": 72.13,
+      "timestamp_seconds_since_start": 73.63887858390808
+    },
+    {
+      "power_watts": 72.11,
+      "timestamp_seconds_since_start": 73.86607646942139
+    },
+    {
+      "power_watts": 72.23,
+      "timestamp_seconds_since_start": 74.09360074996948
+    },
+    {
+      "power_watts": 72.73,
+      "timestamp_seconds_since_start": 74.32185959815979
+    },
+    {
+      "power_watts": 72.47,
+      "timestamp_seconds_since_start": 74.54880046844482
+    },
+    {
+      "power_watts": 72.6,
+      "timestamp_seconds_since_start": 74.77575302124023
+    },
+    {
+      "power_watts": 71.61,
+      "timestamp_seconds_since_start": 75.00299429893494
+    },
+    {
+      "power_watts": 71.51,
+      "timestamp_seconds_since_start": 75.2336540222168
+    },
+    {
+      "power_watts": 71.52,
+      "timestamp_seconds_since_start": 75.46140193939209
+    },
+    {
+      "power_watts": 71.57,
+      "timestamp_seconds_since_start": 75.68844366073608
+    },
+    {
+      "power_watts": 72.06,
+      "timestamp_seconds_since_start": 75.91522479057312
+    },
+    {
+      "power_watts": 71.72,
+      "timestamp_seconds_since_start": 76.14266991615295
+    },
+    {
+      "power_watts": 72.01,
+      "timestamp_seconds_since_start": 76.36943173408508
+    },
+    {
+      "power_watts": 71.89,
+      "timestamp_seconds_since_start": 76.59632778167725
+    },
+    {
+      "power_watts": 72.45,
+      "timestamp_seconds_since_start": 76.82310652732849
+    },
+    {
+      "power_watts": 72.32,
+      "timestamp_seconds_since_start": 77.05292654037476
+    },
+    {
+      "power_watts": 73.07,
+      "timestamp_seconds_since_start": 77.28005504608154
+    },
+    {
+      "power_watts": 73.1,
+      "timestamp_seconds_since_start": 77.50664377212524
+    },
+    {
+      "power_watts": 73.12,
+      "timestamp_seconds_since_start": 77.73365688323975
+    },
+    {
+      "power_watts": 72.98,
+      "timestamp_seconds_since_start": 77.9613151550293
+    },
+    {
+      "power_watts": 72.88,
+      "timestamp_seconds_since_start": 78.18766260147095
+    },
+    {
+      "power_watts": 72.96,
+      "timestamp_seconds_since_start": 78.41525363922119
+    },
+    {
+      "power_watts": 71.81,
+      "timestamp_seconds_since_start": 78.64229226112366
+    },
+    {
+      "power_watts": 72.11,
+      "timestamp_seconds_since_start": 78.86927771568298
+    },
+    {
+      "power_watts": 71.13,
+      "timestamp_seconds_since_start": 79.09626245498657
+    },
+    {
+      "power_watts": 71.19,
+      "timestamp_seconds_since_start": 79.32703852653503
+    },
+    {
+      "power_watts": 70.83,
+      "timestamp_seconds_since_start": 79.55416941642761
+    },
+    {
+      "power_watts": 71.76,
+      "timestamp_seconds_since_start": 79.78142070770264
+    },
+    {
+      "power_watts": 72.22,
+      "timestamp_seconds_since_start": 80.00888299942017
+    },
+    {
+      "power_watts": 72.35,
+      "timestamp_seconds_since_start": 80.24072217941284
+    },
+    {
+      "power_watts": 72.5,
+      "timestamp_seconds_since_start": 80.46805739402771
+    },
+    {
+      "power_watts": 72.69,
+      "timestamp_seconds_since_start": 80.69487261772156
+    },
+    {
+      "power_watts": 72.85,
+      "timestamp_seconds_since_start": 80.92146754264832
+    },
+    {
+      "power_watts": 72.68,
+      "timestamp_seconds_since_start": 81.14873743057251
+    },
+    {
+      "power_watts": 72.71,
+      "timestamp_seconds_since_start": 81.37542176246643
+    },
+    {
+      "power_watts": 72.11,
+      "timestamp_seconds_since_start": 81.60222339630127
+    },
+    {
+      "power_watts": 72.14,
+      "timestamp_seconds_since_start": 81.82933330535889
+    },
+    {
+      "power_watts": 71.77,
+      "timestamp_seconds_since_start": 82.05724596977234
+    },
+    {
+      "power_watts": 71.67,
+      "timestamp_seconds_since_start": 82.2842149734497
+    },
+    {
+      "power_watts": 72.01,
+      "timestamp_seconds_since_start": 82.5120632648468
+    },
+    {
+      "power_watts": 71.71,
+      "timestamp_seconds_since_start": 82.74451541900635
+    },
+    {
+      "power_watts": 71.96,
+      "timestamp_seconds_since_start": 82.97122931480408
+    },
+    {
+      "power_watts": 71.59,
+      "timestamp_seconds_since_start": 83.19814920425415
+    },
+    {
+      "power_watts": 72.01,
+      "timestamp_seconds_since_start": 83.42507934570312
+    },
+    {
+      "power_watts": 71.65,
+      "timestamp_seconds_since_start": 83.65524506568909
+    },
+    {
+      "power_watts": 72.22,
+      "timestamp_seconds_since_start": 83.88301420211792
+    },
+    {
+      "power_watts": 72.17,
+      "timestamp_seconds_since_start": 84.1105809211731
+    },
+    {
+      "power_watts": 72.4,
+      "timestamp_seconds_since_start": 84.33792853355408
+    },
+    {
+      "power_watts": 72.46,
+      "timestamp_seconds_since_start": 84.56587934494019
+    },
+    {
+      "power_watts": 72.45,
+      "timestamp_seconds_since_start": 84.7928113937378
+    },
+    {
+      "power_watts": 72.36,
+      "timestamp_seconds_since_start": 85.01964473724365
+    },
+    {
+      "power_watts": 71.71,
+      "timestamp_seconds_since_start": 85.25132894515991
+    },
+    {
+      "power_watts": 71.92,
+      "timestamp_seconds_since_start": 85.47868156433105
+    },
+    {
+      "power_watts": 70.81,
+      "timestamp_seconds_since_start": 85.70566201210022
+    },
+    {
+      "power_watts": 70.52,
+      "timestamp_seconds_since_start": 85.93221926689148
+    },
+    {
+      "power_watts": 70.58,
+      "timestamp_seconds_since_start": 86.15971302986145
+    },
+    {
+      "power_watts": 71.29,
+      "timestamp_seconds_since_start": 86.38655853271484
+    },
+    {
+      "power_watts": 71.59,
+      "timestamp_seconds_since_start": 86.61334753036499
+    },
+    {
+      "power_watts": 71.35,
+      "timestamp_seconds_since_start": 86.8416039943695
+    },
+    {
+      "power_watts": 71.85,
+      "timestamp_seconds_since_start": 87.06909203529358
+    },
+    {
+      "power_watts": 71.69,
+      "timestamp_seconds_since_start": 87.2959942817688
+    },
+    {
+      "power_watts": 72.05,
+      "timestamp_seconds_since_start": 87.52308058738708
+    },
+    {
+      "power_watts": 71.96,
+      "timestamp_seconds_since_start": 87.75047492980957
+    },
+    {
+      "power_watts": 72.66,
+      "timestamp_seconds_since_start": 87.97778844833374
+    },
+    {
+      "power_watts": 73.04,
+      "timestamp_seconds_since_start": 88.20442843437195
+    },
+    {
+      "power_watts": 73.17,
+      "timestamp_seconds_since_start": 88.43201923370361
+    },
+    {
+      "power_watts": 72.89,
+      "timestamp_seconds_since_start": 88.65893483161926
+    },
+    {
+      "power_watts": 72.89,
+      "timestamp_seconds_since_start": 88.88597202301025
+    },
+    {
+      "power_watts": 72.86,
+      "timestamp_seconds_since_start": 89.11289143562317
+    },
+    {
+      "power_watts": 72.51,
+      "timestamp_seconds_since_start": 89.34214353561401
+    },
+    {
+      "power_watts": 72.55,
+      "timestamp_seconds_since_start": 89.56991195678711
+    },
+    {
+      "power_watts": 72.52,
+      "timestamp_seconds_since_start": 89.79652214050293
+    },
+    {
+      "power_watts": 72.01,
+      "timestamp_seconds_since_start": 90.02468085289001
+    },
+    {
+      "power_watts": 71.8,
+      "timestamp_seconds_since_start": 90.25218796730042
+    },
+    {
+      "power_watts": 71.58,
+      "timestamp_seconds_since_start": 90.47921657562256
+    },
+    {
+      "power_watts": 71.49,
+      "timestamp_seconds_since_start": 90.70609641075134
+    },
+    {
+      "power_watts": 70.79,
+      "timestamp_seconds_since_start": 90.93399667739868
+    },
+    {
+      "power_watts": 71.8,
+      "timestamp_seconds_since_start": 91.16145706176758
+    },
+    {
+      "power_watts": 71.43,
+      "timestamp_seconds_since_start": 91.38936138153076
+    },
+    {
+      "power_watts": 71.84,
+      "timestamp_seconds_since_start": 91.61769390106201
+    },
+    {
+      "power_watts": 71.39,
+      "timestamp_seconds_since_start": 91.84513807296753
+    },
+    {
+      "power_watts": 71.91,
+      "timestamp_seconds_since_start": 92.07265114784241
+    },
+    {
+      "power_watts": 72.18,
+      "timestamp_seconds_since_start": 92.29974579811096
+    },
+    {
+      "power_watts": 72.16,
+      "timestamp_seconds_since_start": 92.5273118019104
+    },
+    {
+      "power_watts": 72.32,
+      "timestamp_seconds_since_start": 92.75412368774414
+    },
+    {
+      "power_watts": 72.57,
+      "timestamp_seconds_since_start": 92.98140120506287
+    },
+    {
+      "power_watts": 73.01,
+      "timestamp_seconds_since_start": 93.21255946159363
+    },
+    {
+      "power_watts": 72.81,
+      "timestamp_seconds_since_start": 93.43950200080872
+    },
+    {
+      "power_watts": 73.01,
+      "timestamp_seconds_since_start": 93.66716456413269
+    },
+    {
+      "power_watts": 73.01,
+      "timestamp_seconds_since_start": 93.89430975914001
+    },
+    {
+      "power_watts": 73.07,
+      "timestamp_seconds_since_start": 94.12483549118042
+    },
+    {
+      "power_watts": 72.91,
+      "timestamp_seconds_since_start": 94.35164380073547
+    },
+    {
+      "power_watts": 73.11,
+      "timestamp_seconds_since_start": 94.5785460472107
+    },
+    {
+      "power_watts": 73.27,
+      "timestamp_seconds_since_start": 94.8057644367218
+    },
+    {
+      "power_watts": 73.15,
+      "timestamp_seconds_since_start": 95.03427648544312
+    },
+    {
+      "power_watts": 73.21,
+      "timestamp_seconds_since_start": 95.26128602027893
+    },
+    {
+      "power_watts": 72.41,
+      "timestamp_seconds_since_start": 95.48867201805115
+    },
+    {
+      "power_watts": 71.8,
+      "timestamp_seconds_since_start": 95.72118210792542
+    },
+    {
+      "power_watts": 71.46,
+      "timestamp_seconds_since_start": 95.94916129112244
+    },
+    {
+      "power_watts": 71.1,
+      "timestamp_seconds_since_start": 96.17592453956604
+    },
+    {
+      "power_watts": 71.66,
+      "timestamp_seconds_since_start": 96.40294098854065
+    },
+    {
+      "power_watts": 71.09,
+      "timestamp_seconds_since_start": 96.63323140144348
+    },
+    {
+      "power_watts": 71.98,
+      "timestamp_seconds_since_start": 96.86020493507385
+    },
+    {
+      "power_watts": 71.62,
+      "timestamp_seconds_since_start": 97.08740949630737
+    },
+    {
+      "power_watts": 71.75,
+      "timestamp_seconds_since_start": 97.3156373500824
+    },
+    {
+      "power_watts": 71.38,
+      "timestamp_seconds_since_start": 97.544118642807
+    },
+    {
+      "power_watts": 71.78,
+      "timestamp_seconds_since_start": 97.77137875556946
+    },
+    {
+      "power_watts": 71.97,
+      "timestamp_seconds_since_start": 97.99862146377563
+    },
+    {
+      "power_watts": 72.05,
+      "timestamp_seconds_since_start": 98.22997164726257
+    },
+    {
+      "power_watts": 72.23,
+      "timestamp_seconds_since_start": 98.45736289024353
+    },
+    {
+      "power_watts": 72.26,
+      "timestamp_seconds_since_start": 98.68415236473083
+    },
+    {
+      "power_watts": 72.79,
+      "timestamp_seconds_since_start": 98.91184449195862
+    },
+    {
+      "power_watts": 72.77,
+      "timestamp_seconds_since_start": 99.13983464241028
+    },
+    {
+      "power_watts": 72.88,
+      "timestamp_seconds_since_start": 99.36725616455078
+    },
+    {
+      "power_watts": 72.81,
+      "timestamp_seconds_since_start": 99.59365034103394
+    },
+    {
+      "power_watts": 73.12,
+      "timestamp_seconds_since_start": 99.82497215270996
+    },
+    {
+      "power_watts": 73.1,
+      "timestamp_seconds_since_start": 100.05316162109375
+    },
+    {
+      "power_watts": 73.04,
+      "timestamp_seconds_since_start": 100.28015422821045
+    },
+    {
+      "power_watts": 73.28,
+      "timestamp_seconds_since_start": 100.51074528694153
+    },
+    {
+      "power_watts": 73.08,
+      "timestamp_seconds_since_start": 100.73995447158813
+    },
+    {
+      "power_watts": 73.04,
+      "timestamp_seconds_since_start": 100.96714234352112
+    },
+    {
+      "power_watts": 72.53,
+      "timestamp_seconds_since_start": 101.19392967224121
+    },
+    {
+      "power_watts": 72.61,
+      "timestamp_seconds_since_start": 101.4213969707489
+    },
+    {
+      "power_watts": 72.19,
+      "timestamp_seconds_since_start": 101.6487443447113
+    }
+  ],
+  "sampling_interval_seconds": 0.2
+}
