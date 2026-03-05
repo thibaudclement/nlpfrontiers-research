@@ -8,12 +8,13 @@ import numpy as np
 import torch
 from datasets import load_dataset
 from torch.utils.data import DataLoader
-from transformers import DataCollatorWithPadding, PreTrainedModel, PreTrainedTokenizerBase
+from transformers import DataCollatorWithPadding, PreTrainedModel, PreTrainedTokenizerBase, TrainingArguments
 from src.data.squad_v2 import prepare_squad_v2_evaluation_features, postprocess_squad_v2_predictions
 from src.energy.meter import EnergyMeter
 from src.evaluation.squad_metrics import compute_squad_v2_metrics
 from src.utils.io import append_line_to_text_file, write_json_file
 from src.utils.token_count import count_non_padding_tokens_in_feature_dataset
+from src.models.counting_trainer import CountingTrainer
 
 # Load the raw SQuAD v2 evaluation split only
 def load_raw_squad_v2_evaluation_split(
@@ -84,43 +85,64 @@ def run_inference_warmup(
     if device.type == "cuda":
         torch.cuda.synchronize()
 
-# Run measured inference and collect logits
-def run_measured_question_answering_inference(
+# Run measured inference with Hugging Face Trainer.predict for consistency with the rest of the harness
+def run_measured_question_answering_inference_with_trainer(
+    run_directory: Path,
     model: PreTrainedModel,
-    dataloader: DataLoader,
+    tokenizer: PreTrainedTokenizerBase,
+    tokenized_evaluation_features_for_model,
+    per_device_evaluation_batch_size: int,
+    dataloader_num_workers: int,
+    pad_to_multiple_of: Optional[int],
     device: torch.device,
 ) -> Dict[str, Any]:
-    model.eval()
+    # Use the same dynamic padding policy as the training / evaluation harness
+    data_collator = DataCollatorWithPadding(
+        tokenizer=tokenizer,
+        pad_to_multiple_of=pad_to_multiple_of,
+    )
 
-    start_logits_batches = []
-    end_logits_batches = []
+    # Build minimal Trainer arguments for prediction-only benchmarking
+    trainer_arguments = TrainingArguments(
+        output_dir=str(run_directory / "huggingface_trainer_predict"),
+        per_device_eval_batch_size=int(per_device_evaluation_batch_size),
+        dataloader_num_workers=int(dataloader_num_workers),
+        report_to=[],
+    )
 
+    # Construct Trainer arguments in a version-compatible way
+    trainer_init_signature = inspect.signature(CountingTrainer.__init__)
+    trainer_kwargs: Dict[str, Any] = {
+        "model": model,
+        "args": trainer_arguments,
+        "data_collator": data_collator,
+    }
+    if "tokenizer" in trainer_init_signature.parameters:
+        trainer_kwargs["tokenizer"] = tokenizer
+
+    trainer = CountingTrainer(**trainer_kwargs)
+
+    # Measure wall-clock runtime around Trainer.predict
     if device.type == "cuda":
         torch.cuda.synchronize()
 
     inference_start_time_seconds = time.perf_counter()
-
-    with torch.inference_mode():
-        for batch in dataloader:
-            batch_on_device = {name: tensor.to(device) for name, tensor in batch.items()}
-            batch_for_model = filter_batch_for_model_forward(model=model, batch=batch_on_device)
-
-            outputs = model(**batch_for_model)
-
-            start_logits_batches.append(outputs.start_logits.detach().cpu().numpy())
-            end_logits_batches.append(outputs.end_logits.detach().cpu().numpy())
+    prediction_output = trainer.predict(tokenized_evaluation_features_for_model)
 
     if device.type == "cuda":
         torch.cuda.synchronize()
 
     inference_end_time_seconds = time.perf_counter()
 
-    all_start_logits = np.concatenate(start_logits_batches, axis=0)
-    all_end_logits = np.concatenate(end_logits_batches, axis=0)
+    raw_predictions = prediction_output.predictions
+    if isinstance(raw_predictions, tuple) and len(raw_predictions) == 2:
+        start_logits, end_logits = raw_predictions
+    else:
+        start_logits, end_logits = raw_predictions
 
     return {
-        "start_logits": all_start_logits,
-        "end_logits": all_end_logits,
+        "start_logits": np.array(start_logits),
+        "end_logits": np.array(end_logits),
         "inference_runtime_seconds": float(inference_end_time_seconds - inference_start_time_seconds),
     }
 
@@ -209,9 +231,14 @@ def evaluate_checkpoint_on_squad_v2_at_sequence_length(
     )
     inference_energy_meter.start()
 
-    measured_inference_output = run_measured_question_answering_inference(
+    measured_inference_output = run_measured_question_answering_inference_with_trainer(
+        run_directory=run_directory,
         model=model,
-        dataloader=evaluation_dataloader,
+        tokenizer=tokenizer,
+        tokenized_evaluation_features_for_model=tokenized_evaluation_features_for_model,
+        per_device_evaluation_batch_size=int(per_device_evaluation_batch_size),
+        dataloader_num_workers=int(dataloader_num_workers),
+        pad_to_multiple_of=pad_to_multiple_of,
         device=device,
     )
 
@@ -225,6 +252,7 @@ def evaluate_checkpoint_on_squad_v2_at_sequence_length(
     end_logits = measured_inference_output["end_logits"]
     inference_runtime_seconds = float(measured_inference_output["inference_runtime_seconds"])
     inference_energy_joules = float(inference_energy_meter.get_energy_joules())
+    number_of_energy_samples = int(len(inference_energy_meter.samples))
 
     # Postprocess logits into text predictions and no-answer probabilities
     predictions_by_example_id, no_answer_probability_by_example_id = postprocess_squad_v2_predictions(
@@ -291,6 +319,7 @@ def evaluate_checkpoint_on_squad_v2_at_sequence_length(
         "average_latency_per_raw_example_milliseconds": average_latency_per_raw_example_milliseconds,
         "average_latency_per_feature_window_milliseconds": average_latency_per_feature_window_milliseconds,
         "inference_energy_joules": inference_energy_joules,
+        "number_of_energy_samples": number_of_energy_samples,
         "joules_per_inference_example": (
             inference_energy_joules / number_of_raw_evaluation_examples
             if number_of_raw_evaluation_examples > 0
@@ -331,6 +360,7 @@ def evaluate_checkpoint_on_squad_v2_at_sequence_length(
             "joules_per_inference_example": result["joules_per_inference_example"],
             "joules_per_feature_window": result["joules_per_feature_window"],
             "joules_per_inference_token": result["joules_per_inference_token"],
+            "number_of_energy_samples": number_of_energy_samples,
         },
     )
 

@@ -1,0 +1,21 @@
+{
+  "duration_seconds": 106.0511646270752,
+  "effective_document_stride": 128,
+  "energy_joules": 0.0,
+  "joules_per_feature_window": 0.0,
+  "joules_per_inference_example": 0.0,
+  "joules_per_inference_token": 0.0,
+  "maximum_sequence_length": 320,
+  "number_of_feature_windows": 12507,
+  "number_of_inference_tokens": 2238121,
+  "number_of_raw_evaluation_examples": 11873,
+  "number_of_samples": 1,
+  "phase": "inference",
+  "samples": [
+    {
+      "power_watts": 70.99,
+      "timestamp_seconds_since_start": 105.85078525543213
+    }
+  ],
+  "sampling_interval_seconds": 0.2
+}
