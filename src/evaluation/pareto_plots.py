@@ -1,0 +1,104 @@
+from __future__ import annotations
+import csv
+from pathlib import Path
+from typing import Dict, List
+import matplotlib.pyplot as plt
+
+# Save sweep rows as a CSV table
+def save_sequence_length_sweep_rows_to_csv(rows: List[Dict[str, object]], csv_path: Path) -> None:
+    if len(rows) == 0:
+        raise ValueError("Cannot save an empty sequence length sweep table.")
+
+    field_names = list(rows[0].keys())
+
+    with open(csv_path, "w", newline="", encoding="utf-8") as output_file:
+        writer = csv.DictWriter(output_file, fieldnames=field_names)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+# Load sweep rows from CSV table
+def load_sequence_length_sweep_rows_from_csv(csv_path: Path) -> List[Dict[str, str]]:
+    with open(csv_path, "r", newline="", encoding="utf-8") as input_file:
+        reader = csv.DictReader(input_file)
+        return list(reader)
+
+# Plot one sweep curve for single model checkpoint
+def plot_single_sequence_length_sweep(
+    rows: List[Dict[str, object]],
+    output_path: Path,
+    x_field_name: str,
+    y_field_name: str,
+    x_axis_label: str,
+    y_axis_label: str,
+    plot_title: str,
+) -> None:
+    rows_sorted = sorted(rows, key=lambda row: float(row[x_field_name]))
+
+    x_values = [float(row[x_field_name]) for row in rows_sorted]
+    y_values = [float(row[y_field_name]) for row in rows_sorted]
+    labels = [str(row["maximum_sequence_length"]) for row in rows_sorted]
+
+    # Create a simple scatter-line plot and annotate each point by sequence length
+    plt.figure()
+    plt.plot(x_values, y_values, marker="o")
+    plt.xlabel(x_axis_label)
+    plt.ylabel(y_axis_label)
+    plt.title(plot_title)
+    plt.grid(True, linestyle=":", linewidth=0.6, alpha=0.5)
+
+    for x_value, y_value, label in zip(x_values, y_values, labels):
+        plt.annotate(
+            label,
+            (x_value, y_value),
+            textcoords="offset points",
+            xytext=(5, 5),
+        )
+
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+
+# Plot overlay comparison across multiple sweep CSV files
+def plot_sequence_length_sweep_comparison(
+    csv_paths: List[Path],
+    model_labels: List[str],
+    output_path: Path,
+    x_field_name: str,
+    y_field_name: str,
+    x_axis_label: str,
+    y_axis_label: str,
+    plot_title: str,
+) -> None:
+    if len(csv_paths) != len(model_labels):
+        raise ValueError("csv_paths and model_labels must have the same length.")
+
+    plt.figure()
+    plt.grid(True, linestyle=":", linewidth=0.6, alpha=0.5)
+
+    # Overlay one line per model / checkpoint
+    for csv_path, model_label in zip(csv_paths, model_labels):
+        rows = load_sequence_length_sweep_rows_from_csv(csv_path=csv_path)
+        rows_sorted = sorted(rows, key=lambda row: float(row[x_field_name]))
+
+        x_values = [float(row[x_field_name]) for row in rows_sorted]
+        y_values = [float(row[y_field_name]) for row in rows_sorted]
+
+        plt.plot(x_values, y_values, marker="o", label=model_label)
+
+        for row in rows_sorted:
+            plt.annotate(
+                str(row["maximum_sequence_length"]),
+                (float(row[x_field_name]), float(row[y_field_name])),
+                textcoords="offset points",
+                xytext=(4, 4),
+            )
+
+    plt.xlabel(x_axis_label)
+    plt.ylabel(y_axis_label)
+    plt.title(plot_title)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()

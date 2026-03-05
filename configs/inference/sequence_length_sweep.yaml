@@ -1,0 +1,31 @@
+# Inference-time max sequence length sweep configuration for SQuAD v2
+random_seed: 42
+
+# Sequence lengths to evaluate at inference time.
+sequence_lengths:
+  - 384
+  - 320
+  - 256
+  - 224
+  - 192
+  - 160
+
+# Base document stride before per-length clamping
+document_stride: 128
+
+# Tokenization / batching settings
+pad_to_maximum_length: false
+pad_to_multiple_of: 8
+per_device_evaluation_batch_size: 16
+dataloader_num_workers: 2
+
+# Inference warmup and power sampling settings
+number_of_warmup_batches: 10
+power_sampling_interval_seconds: 0.2
+
+# QA postprocessing settings
+n_best_size: 20
+maximum_answer_length: 30
+
+# Fixed threshold for SQuAD v2 no-answer handling
+no_answer_probability_threshold: 0.06458
