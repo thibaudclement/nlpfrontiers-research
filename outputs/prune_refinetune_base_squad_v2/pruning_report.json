@@ -1,0 +1,14 @@
+{
+  "pruned_parameter_tuples": 73,
+  "sparsity_after": {
+    "global_sparsity": 0.5,
+    "total_weight_parameters": 84936192,
+    "total_zero_parameters": 42468096
+  },
+  "sparsity_before": {
+    "global_sparsity": 0.0,
+    "total_weight_parameters": 84936192,
+    "total_zero_parameters": 0
+  },
+  "target_sparsity": 0.5
+}

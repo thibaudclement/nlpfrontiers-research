@@ -1,0 +1,10 @@
+{
+  "trainer_training_metrics": {
+    "epoch": 1.0,
+    "total_flos": 1.852373536119744e+16,
+    "train_loss": 0.6226949834215619,
+    "train_runtime": 4389.1022,
+    "train_samples_per_second": 30.018,
+    "train_steps_per_second": 3.752
+  }
+}

@@ -1,0 +1,19 @@
+[run] 2026-03-05_18-30-39_prune_refinetune_squad_v2
+[checkpoint] runs/2026-03-05_05-41-04_baseline_squad_v2/huggingface_trainer/checkpoint-32940
+[configs] dataset=configs/datasets/squad_v2.yaml model=configs/models/bert_base.yaml training=configs/training/refinetune_pruned.yaml pruning=configs/pruning/magnitude_prune_50.yaml
+[pruning] applying global magnitude pruning
+[pruning] report: {'target_sparsity': 0.5, 'pruned_parameter_tuples': 73, 'sparsity_before': {'global_sparsity': 0.0, 'total_weight_parameters': 84936192, 'total_zero_parameters': 0}, 'sparsity_after': {'global_sparsity': 0.5, 'total_weight_parameters': 84936192, 'total_zero_parameters': 42468096}}
+[data] tokenizing training features
+[data] tokenizing evaluation features
+[energy][train] starting energy meter (refinetune)
+[train] calling trainer.train() (refinetune)
+[energy][train] stopped energy meter (refinetune)
+[energy][inference] starting energy meter for trainer.predict()
+[inference] calling trainer.predict(evaluation_features)
+[energy][inference] stopped energy meter for trainer.predict()
+[evaluation] postprocessing logits into text predictions
+[debug] no_answer_probability stats: min=0.000000, max=1.000000, mean=0.439192
+[evaluation] computing SQuAD v2 metrics (raw)
+[evaluation] using fixed no_answer_probability_threshold=0.064580
+[evaluation] computing SQuAD v2 metrics (thresholded)
+[done] prune + refinetune run complete

@@ -1,0 +1,71 @@
+{
+  "checkpoint_path": "runs/2026-03-05_05-41-04_baseline_squad_v2/huggingface_trainer/checkpoint-32940",
+  "dataset_id": "squad_v2",
+  "inference_energy": {
+    "energy_joules": 5092.696543347832,
+    "joules_per_inference_batch": 6.709745116400305,
+    "joules_per_inference_example": 0.41970467639260195,
+    "joules_per_inference_token": 0.0023317972728057828,
+    "number_of_inference_batches": 759,
+    "number_of_inference_examples": 12134,
+    "number_of_inference_tokens": 2184022,
+    "phase": "inference"
+  },
+  "metrics": {
+    "HasAns_exact": 77.76653171390014,
+    "HasAns_f1": 86.340095058822,
+    "HasAns_total": 5928,
+    "NoAns_exact": 0.0,
+    "NoAns_f1": 0.0,
+    "NoAns_total": 5945,
+    "best_exact": 73.07335972374294,
+    "best_exact_thresh": 0.007931102998554707,
+    "best_f1": 76.08213023063142,
+    "best_f1_thresh": 0.09729227423667908,
+    "exact": 38.827592015497345,
+    "f1": 43.10823578781242,
+    "total": 11873
+  },
+  "metrics_thresholded": {
+    "HasAns_exact": 66.59919028340082,
+    "HasAns_f1": 73.06731066017753,
+    "HasAns_total": 5928,
+    "NoAns_exact": 78.78889823380993,
+    "NoAns_f1": 78.78889823380993,
+    "NoAns_total": 5945,
+    "best_exact": 73.07335972374294,
+    "best_exact_thresh": 0.007931102998554707,
+    "best_f1": 76.0149141097194,
+    "best_f1_thresh": 0.035177264362573624,
+    "exact": 72.70277099300935,
+    "f1": 75.93220058902824,
+    "total": 11873
+  },
+  "model_name_or_path": "runs/2026-03-05_05-41-04_baseline_squad_v2/huggingface_trainer/checkpoint-32940",
+  "no_answer_probability_threshold": 0.06458,
+  "pruning_report": {
+    "pruned_parameter_tuples": 73,
+    "sparsity_after": {
+      "global_sparsity": 0.5,
+      "total_weight_parameters": 84936192,
+      "total_zero_parameters": 42468096
+    },
+    "sparsity_before": {
+      "global_sparsity": 0.0,
+      "total_weight_parameters": 84936192,
+      "total_zero_parameters": 0
+    },
+    "target_sparsity": 0.5
+  },
+  "run_identifier": "2026-03-05_18-30-39_prune_refinetune_squad_v2",
+  "training_energy": {
+    "energy_joules": 313589.7319416576,
+    "joules_per_training_example": 2.380115457152402,
+    "joules_per_training_step": 19.040056584192932,
+    "joules_per_training_token": 0.013965154282450914,
+    "number_of_training_examples": 131754,
+    "number_of_training_steps": 16470,
+    "number_of_training_tokens": 22455157,
+    "phase": "training"
+  }
+}
