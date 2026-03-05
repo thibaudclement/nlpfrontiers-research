@@ -1,0 +1,19 @@
+[run] 2026-03-05_10-20-45_baseline_squad_v2
+[configs] dataset=configs/datasets/squad_v2.yaml model=configs/models/distilbert_base.yaml training=configs/training/baseline.yaml
+[data] tokenizing training features
+[data] tokenizing evaluation features
+[energy][train] starting energy meter
+[train] calling trainer.train()
+[energy][train] stopped energy meter
+[energy][inference] starting energy meter for trainer.predict()
+[inference] calling trainer.predict(evaluation_features)
+[energy][inference] stopped energy meter for trainer.predict()
+[evaluation] postprocessing logits into text predictions
+[debug] no_answer_probability stats: min=0.000000, max=1.000000, mean=0.432444
+[debug] no_answer_probability samples: [2.2059817679572663e-07, 1.3375027920422683e-06, 6.631615345507234e-06, 1.7589209021230192e-05, 1.0354689209930474e-05, 0.8409634109014745, 1.7682863946011297e-05, 0.5175546941538504, 0.3249006529859257, 4.514036012377664e-05]
+[evaluation] applied no_answer_probability_threshold=0.064580
+[evaluation] computing SQuAD v2 metrics (raw)
+[evaluation] metrics: {'exact': 37.81689547713299, 'f1': 41.82008621698205, 'total': 11873, 'HasAns_exact': 75.74224021592443, 'HasAns_f1': 83.7601018310101, 'HasAns_total': 5928, 'NoAns_exact': 0.0, 'NoAns_f1': 0.0, 'NoAns_total': 5945, 'best_exact': 66.92495578202644, 'best_exact_thresh': 0.15908174216747284, 'best_f1': 69.41803655859204, 'best_f1_thresh': 0.15908174216747284}
+[evaluation] computing SQuAD v2 metrics (thresholded)
+[evaluation] metrics_thresholded: {'exact': 66.53752210898678, 'f1': 68.63109438553123, 'total': 11873, 'HasAns_exact': 54.689608636977056, 'HasAns_f1': 58.88275702419238, 'HasAns_total': 5928, 'NoAns_exact': 78.3515559293524, 'NoAns_f1': 78.3515559293524, 'NoAns_total': 5945, 'best_exact': 66.57963446475196, 'best_exact_thresh': 0.055683016777038574, 'best_f1': 68.65506603419779, 'best_f1_thresh': 0.06324764341115952}
+[done] baseline harness run complete
