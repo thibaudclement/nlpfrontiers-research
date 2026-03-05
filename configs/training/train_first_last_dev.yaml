@@ -1,0 +1,41 @@
+# Training configuration for baseline harness validation with Hugging Face Trainer
+random_seed: 42
+
+# Tokenization and feature generation settings for extractive QA
+maximum_sequence_length: 384
+document_stride: 128
+pad_to_maximum_length: false
+
+# Trainer hyperparameters and runtime settings
+learning_rate: 3.0e-5
+weight_decay: 0.01
+number_of_training_epochs: 1
+per_device_training_batch_size: 8
+per_device_evaluation_batch_size: 16
+gradient_accumulation_steps: 1
+warmup_steps: 50
+logging_steps: 50
+
+# Keep baseline harness simple (no checkpoints yet)
+save_strategy: "no"
+
+# Run periodic evaluation during training (final metrics computed after predict())
+evaluation_strategy: "steps"
+evaluation_steps: 200
+
+# Mixed precision toggles (keep false for harness validation)
+use_fp16: false
+use_bf16: false
+
+# Dataloader settings
+dataloader_num_workers: 2
+
+# Energy sampling interval
+power_sampling_interval_seconds: 0.5
+
+# No-answer probability threshold for explicit empty-string predictions
+no_answer_probability_threshold: 0.06458
+
+# Freeze strategy
+freeze_strategy: train_first_last
+trainable_layer_indices: [0, 1, 10, 11]
