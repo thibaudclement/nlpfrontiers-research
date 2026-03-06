@@ -7,7 +7,6 @@ from typing import Any, Dict, Optional
 import numpy as np
 import torch
 from datasets import Dataset, load_dataset
-from copy import deepcopy
 from torch.utils.data import DataLoader
 from transformers import DataCollatorWithPadding, PreTrainedModel, PreTrainedTokenizerBase, TrainingArguments
 from src.data.squad_v2 import prepare_squad_v2_evaluation_features, postprocess_squad_v2_predictions
@@ -1246,16 +1245,16 @@ def evaluate_checkpoint_on_squad_v2_with_token_pruning(
         token_pruning_keep_ratio=float(token_pruning_keep_ratio),
     )
 
-# Evaluate one checkpoint on SQuAD v2 at specific dynamic token-pruning keep ratio
+# Evaluate one checkpoint on SQuAD v2 with token pruning from pre-tokenized reusable features
 def evaluate_checkpoint_on_squad_v2_with_token_pruning_from_tokenized_features(
     run_directory: Path,
     log_file_path: Path,
     model: PreTrainedModel,
     tokenizer: PreTrainedTokenizerBase,
     raw_evaluation_split,
+    tokenized_evaluation_features,
     maximum_sequence_length: int,
-    configured_document_stride: int,
-    pad_to_maximum_length: bool,
+    effective_document_stride: int,
     pad_to_multiple_of: Optional[int],
     per_device_evaluation_batch_size: int,
     dataloader_num_workers: int,
@@ -1269,30 +1268,9 @@ def evaluate_checkpoint_on_squad_v2_with_token_pruning_from_tokenized_features(
     normalized_keep_ratio = normalize_token_pruning_keep_ratio(token_pruning_keep_ratio)
     keep_ratio_label = format_token_pruning_keep_ratio_label(normalized_keep_ratio)
 
-    effective_document_stride = clamp_document_stride_for_sequence_length(
-        configured_document_stride=configured_document_stride,
-        maximum_sequence_length=maximum_sequence_length,
-    )
-
     append_line_to_text_file(
         log_file_path,
         f"[token_pruning_keep_ratio={keep_ratio_label}] effective_document_stride={effective_document_stride}",
-    )
-
-    tokenized_evaluation_features = raw_evaluation_split.map(
-        lambda examples: prepare_squad_v2_evaluation_features(
-            examples=examples,
-            tokenizer=tokenizer,
-            maximum_sequence_length=int(maximum_sequence_length),
-            document_stride=int(effective_document_stride),
-            pad_to_maximum_length=bool(pad_to_maximum_length),
-        ),
-        batched=True,
-        remove_columns=raw_evaluation_split.column_names,
-        desc=(
-            f"Tokenizing SQuAD v2 eval at max_sequence_length={maximum_sequence_length} "
-            f"for token_pruning_keep_ratio={keep_ratio_label}"
-        ),
     )
 
     append_line_to_text_file(
