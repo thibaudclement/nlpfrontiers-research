@@ -43,9 +43,9 @@ def plot_single_sequence_length_sweep(
     plt.figure()
     plt.plot(x_values, y_values, marker="o")
 
-    # Add margins so point labels do not clip.
-    x_margin = (max(x_values) - min(x_values)) * 0.05
-    y_margin = (max(y_values) - min(y_values)) * 0.05
+    # Add margins so point labels do not clip
+    x_margin = (max(x_values) - min(x_values)) * 0.08
+    y_margin = (max(y_values) - min(y_values)) * 0.08
 
     plt.xlim(min(x_values) - x_margin, max(x_values) + x_margin)
     plt.ylim(min(y_values) - y_margin, max(y_values) + y_margin)
@@ -65,7 +65,6 @@ def plot_single_sequence_length_sweep(
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
-
 
 # Plot overlay comparison across multiple sweep CSV files
 def plot_sequence_length_sweep_comparison(
@@ -122,11 +121,6 @@ def plot_sequence_length_sweep_comparison(
         for row in rows_sorted:
             x_value = float(row[x_field_name])
             y_value = float(row[y_field_name])
-
-            # Move labels inward when points are near the right or top border.
-            # x_offset = -18 if x_value > (x_max_with_margin - 0.15 * x_range) else 4
-            # y_offset = -10 if y_value > (y_max_with_margin - 0.15 * y_range) else 4
-
             x_offset = 4
             y_offset = 4
 
