@@ -1,0 +1,31 @@
+# Dynamic token-pruning sweep configuration for SQuAD v2
+random_seed: 42
+
+# Fixed evaluation tokenization settings
+maximum_sequence_length: 384
+document_stride: 128
+
+# Context-token keep ratios to evaluate.
+token_pruning_keep_ratios:
+  - 1.00
+  - 0.80
+  - 0.60
+  - 0.40
+  - 0.30
+
+# Tokenization / batching settings
+pad_to_maximum_length: true
+pad_to_multiple_of: 8
+per_device_evaluation_batch_size: 16
+dataloader_num_workers: 2
+
+# Inference warmup and power sampling settings
+number_of_warmup_batches: 10
+power_sampling_interval_seconds: 0.2
+
+# QA postprocessing settings
+n_best_size: 20
+maximum_answer_length: 30
+
+# Fixed threshold for SQuAD v2 no-answer handling
+no_answer_probability_threshold: 0.06458

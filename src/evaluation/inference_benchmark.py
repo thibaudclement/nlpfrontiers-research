@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 import numpy as np
 import torch
-from datasets import load_dataset
+from datasets import Dataset, load_dataset
 from torch.utils.data import DataLoader
 from transformers import DataCollatorWithPadding, PreTrainedModel, PreTrainedTokenizerBase, TrainingArguments
 from src.data.squad_v2 import prepare_squad_v2_evaluation_features, postprocess_squad_v2_predictions
@@ -244,6 +244,450 @@ def cast_model_for_inference_precision(
 ) -> PreTrainedModel:
     target_dtype = get_model_parameter_dtype_for_precision_mode(precision_mode)
     return model.to(dtype=target_dtype)
+
+# Normalize token pruning keep-ratio values for stable labeling and folder names
+def normalize_token_pruning_keep_ratio(keep_ratio: float) -> float:
+    normalized_keep_ratio = float(keep_ratio)
+    if normalized_keep_ratio <= 0.0 or normalized_keep_ratio > 1.0:
+        raise ValueError(f"Token pruning keep_ratio must be in (0, 1], got {keep_ratio}")
+    return normalized_keep_ratio
+
+# Format token pruning keep-ratio for logs, plots, and subdirectory names
+def format_token_pruning_keep_ratio_label(keep_ratio: float) -> str:
+    normalized_keep_ratio = normalize_token_pruning_keep_ratio(keep_ratio)
+    return f"{normalized_keep_ratio:.2f}"
+
+# Build a map from example id to raw example fields used during token pruning
+def build_raw_example_lookup_by_id(raw_evaluation_split) -> Dict[str, Dict[str, Any]]:
+    raw_example_lookup_by_id: Dict[str, Dict[str, Any]] = {}
+
+    for raw_example in raw_evaluation_split:
+        raw_example_lookup_by_id[str(raw_example["id"])] = {
+            "id": str(raw_example["id"]),
+            "question": raw_example["question"],
+            "context": raw_example["context"],
+        }
+
+    return raw_example_lookup_by_id
+
+# Identify question token positions
+def get_question_token_positions_for_feature(
+    feature: Dict[str, Any],
+    tokenizer: PreTrainedTokenizerBase,
+) -> list[int]:
+    input_ids = feature["input_ids"]
+    attention_mask = feature["attention_mask"]
+    offset_mapping = feature["offset_mapping"]
+    token_type_ids = feature.get("token_type_ids")
+    special_token_ids = set(tokenizer.all_special_ids)
+
+    if token_type_ids is not None:
+        return [
+            index
+            for index, (token_id, token_type_id, attention_value, offset_value) in enumerate(
+                zip(input_ids, token_type_ids, attention_mask, offset_mapping)
+            )
+            if int(attention_value) == 1
+            and int(token_type_id) == 0
+            and token_id not in special_token_ids
+            and offset_value is None
+        ]
+
+    context_positions = [
+        index
+        for index, (attention_value, offset_value) in enumerate(zip(attention_mask, offset_mapping))
+        if int(attention_value) == 1 and offset_value is not None
+    ]
+
+    first_context_position = min(context_positions) if len(context_positions) > 0 else len(input_ids)
+
+    return [
+        index
+        for index, (token_id, attention_value, offset_value) in enumerate(
+            zip(input_ids, attention_mask, offset_mapping)
+        )
+        if index < first_context_position
+        and int(attention_value) == 1
+        and token_id not in special_token_ids
+        and offset_value is None
+    ]
+
+# Identify context token positions
+def get_context_token_positions_for_feature(feature: Dict[str, Any]) -> list[int]:
+    input_ids = feature["input_ids"]
+    attention_mask = feature["attention_mask"]
+    offset_mapping = feature["offset_mapping"]
+
+    return [
+        index
+        for index, (_, attention_value, offset_value) in enumerate(
+            zip(input_ids, attention_mask, offset_mapping)
+        )
+        if int(attention_value) == 1 and offset_value is not None
+    ]
+
+# Score context tokens
+def score_context_tokens_with_question_embedding_similarity(
+    feature: Dict[str, Any],
+    tokenizer: PreTrainedTokenizerBase,
+    embedding_weight_cpu: torch.Tensor,
+) -> Dict[int, float]:
+    input_ids = feature["input_ids"]
+
+    question_token_positions = get_question_token_positions_for_feature(
+        feature=feature,
+        tokenizer=tokenizer,
+    )
+    context_token_positions = get_context_token_positions_for_feature(feature=feature)
+
+    if len(context_token_positions) == 0:
+        return {}
+
+    if len(question_token_positions) == 0:
+        return {position: 0.0 for position in context_token_positions}
+
+    question_input_ids = torch.tensor(
+        [int(input_ids[position]) for position in question_token_positions],
+        dtype=torch.long,
+    )
+    question_embeddings = embedding_weight_cpu[question_input_ids]
+    question_embedding_mean = question_embeddings.mean(dim=0)
+
+    question_embedding_mean_norm = torch.linalg.norm(question_embedding_mean, ord=2)
+    if float(question_embedding_mean_norm.item()) == 0.0:
+        return {position: 0.0 for position in context_token_positions}
+
+    scores_by_context_position: Dict[int, float] = {}
+
+    for context_position in context_token_positions:
+        context_input_id = int(input_ids[context_position])
+        context_embedding = embedding_weight_cpu[context_input_id]
+        context_embedding_norm = torch.linalg.norm(context_embedding, ord=2)
+
+        if float(context_embedding_norm.item()) == 0.0:
+            cosine_similarity = 0.0
+        else:
+            cosine_similarity = float(
+                torch.dot(context_embedding, question_embedding_mean).item()
+                / (context_embedding_norm.item() * question_embedding_mean_norm.item())
+            )
+
+        scores_by_context_position[context_position] = cosine_similarity
+
+    return scores_by_context_position
+
+# Prune context tokens
+def prune_tokenized_feature_with_keep_ratio(
+    feature: Dict[str, Any],
+    tokenizer: PreTrainedTokenizerBase,
+    embedding_weight_cpu: torch.Tensor,
+    keep_ratio: float,
+) -> Dict[str, Any]:
+    normalized_keep_ratio = normalize_token_pruning_keep_ratio(keep_ratio)
+
+    input_ids = feature["input_ids"]
+    attention_mask = feature["attention_mask"]
+    offset_mapping = feature["offset_mapping"]
+
+    question_token_positions = set(
+        get_question_token_positions_for_feature(
+            feature=feature,
+            tokenizer=tokenizer,
+        )
+    )
+    context_token_positions = get_context_token_positions_for_feature(feature=feature)
+
+    if len(context_token_positions) == 0:
+        pruned_feature = dict(feature)
+        pruned_feature["token_pruning_keep_ratio_target"] = normalized_keep_ratio
+        pruned_feature["token_pruning_keep_ratio_realized"] = 1.0
+        pruned_feature["number_of_context_tokens_before_pruning"] = 0
+        pruned_feature["number_of_context_tokens_after_pruning"] = 0
+        return pruned_feature
+
+    number_of_context_tokens_to_keep = max(
+        1,
+        int(math.ceil(normalized_keep_ratio * len(context_token_positions))),
+    )
+
+    scores_by_context_position = score_context_tokens_with_question_embedding_similarity(
+        feature=feature,
+        tokenizer=tokenizer,
+        embedding_weight_cpu=embedding_weight_cpu,
+    )
+
+    context_positions_sorted_by_score = sorted(
+        context_token_positions,
+        key=lambda position: (
+            scores_by_context_position.get(position, 0.0),
+            -position,
+        ),
+        reverse=True,
+    )
+
+    kept_context_positions = set(
+        context_positions_sorted_by_score[:number_of_context_tokens_to_keep]
+    )
+
+    kept_positions: list[int] = []
+    for position, (token_id, attention_value, offset_value) in enumerate(
+        zip(input_ids, attention_mask, offset_mapping)
+    ):
+        is_active_token = int(attention_value) == 1
+        is_context_token = offset_value is not None
+        is_question_token = position in question_token_positions
+        is_special_token = (
+            is_active_token
+            and int(token_id) in set(tokenizer.all_special_ids)
+        )
+
+        should_keep_position = (
+            is_question_token
+            or is_special_token
+            or position in kept_context_positions
+        )
+
+        if should_keep_position:
+            kept_positions.append(position)
+
+    pruned_feature: Dict[str, Any] = {}
+
+    sequence_length = len(input_ids)
+    for field_name, field_value in feature.items():
+        if isinstance(field_value, list) and len(field_value) == sequence_length:
+            pruned_feature[field_name] = [field_value[position] for position in kept_positions]
+        else:
+            pruned_feature[field_name] = field_value
+
+    pruned_feature["token_pruning_keep_ratio_target"] = normalized_keep_ratio
+    pruned_feature["token_pruning_keep_ratio_realized"] = (
+        float(len(kept_context_positions)) / float(len(context_token_positions))
+        if len(context_token_positions) > 0
+        else 1.0
+    )
+    pruned_feature["number_of_context_tokens_before_pruning"] = int(len(context_token_positions))
+    pruned_feature["number_of_context_tokens_after_pruning"] = int(len(kept_context_positions))
+
+    return pruned_feature
+
+# Apply dynamic question-aware token pruning
+def apply_dynamic_token_pruning_to_tokenized_features(
+    tokenized_evaluation_features,
+    tokenizer: PreTrainedTokenizerBase,
+    model: PreTrainedModel,
+    keep_ratio: float,
+):
+    normalized_keep_ratio = normalize_token_pruning_keep_ratio(keep_ratio)
+
+    embedding_weight_cpu = (
+        model.get_input_embeddings().weight.detach().to(device="cpu", dtype=torch.float32)
+    )
+
+    pruned_feature_rows = []
+    for feature in tokenized_evaluation_features:
+        pruned_feature_rows.append(
+            prune_tokenized_feature_with_keep_ratio(
+                feature=feature,
+                tokenizer=tokenizer,
+                embedding_weight_cpu=embedding_weight_cpu,
+                keep_ratio=normalized_keep_ratio,
+            )
+        )
+
+    return Dataset.from_list(pruned_feature_rows)
+
+# Evaluate one checkpoint on SQuAD v2 from already-tokenized features
+def evaluate_checkpoint_on_squad_v2_with_tokenized_features(
+    run_directory: Path,
+    log_file_path: Path,
+    model: PreTrainedModel,
+    tokenizer: PreTrainedTokenizerBase,
+    raw_evaluation_split,
+    tokenized_evaluation_features,
+    maximum_sequence_length: int,
+    effective_document_stride: int,
+    per_device_evaluation_batch_size: int,
+    dataloader_num_workers: int,
+    pad_to_multiple_of: Optional[int],
+    number_of_warmup_batches: int,
+    power_sampling_interval_seconds: float,
+    n_best_size: int,
+    maximum_answer_length: int,
+    no_answer_probability_threshold: float,
+    run_label: str,
+    extra_result_fields: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    device = next(model.parameters()).device
+
+    tokenized_evaluation_features_for_postprocessing = tokenized_evaluation_features
+
+    tokenized_evaluation_features_for_model = tokenized_evaluation_features.remove_columns(
+        ["example_id", "offset_mapping"]
+    )
+
+    evaluation_dataloader = build_evaluation_dataloader(
+        tokenized_evaluation_features_for_model=tokenized_evaluation_features_for_model,
+        tokenizer=tokenizer,
+        per_device_evaluation_batch_size=int(per_device_evaluation_batch_size),
+        dataloader_num_workers=int(dataloader_num_workers),
+        pad_to_multiple_of=pad_to_multiple_of,
+    )
+
+    append_line_to_text_file(
+        log_file_path,
+        f"[{run_label}] running warmup batches={number_of_warmup_batches}",
+    )
+    run_inference_warmup(
+        model=model,
+        dataloader=evaluation_dataloader,
+        device=device,
+        number_of_warmup_batches=int(number_of_warmup_batches),
+    )
+
+    append_line_to_text_file(
+        log_file_path,
+        f"[{run_label}] starting inference energy meter",
+    )
+    inference_energy_meter = EnergyMeter(
+        sampling_interval_seconds=float(power_sampling_interval_seconds)
+    )
+    inference_energy_meter.start()
+
+    measured_inference_output = run_measured_question_answering_inference_with_trainer(
+        run_directory=run_directory,
+        model=model,
+        tokenizer=tokenizer,
+        tokenized_evaluation_features_for_model=tokenized_evaluation_features_for_model,
+        per_device_evaluation_batch_size=int(per_device_evaluation_batch_size),
+        dataloader_num_workers=int(dataloader_num_workers),
+        pad_to_multiple_of=pad_to_multiple_of,
+        device=device,
+    )
+
+    inference_energy_meter.stop()
+    append_line_to_text_file(
+        log_file_path,
+        f"[{run_label}] stopped inference energy meter",
+    )
+
+    start_logits = measured_inference_output["start_logits"]
+    end_logits = measured_inference_output["end_logits"]
+    inference_runtime_seconds = float(measured_inference_output["inference_runtime_seconds"])
+    inference_energy_joules = float(inference_energy_meter.get_energy_joules())
+    number_of_energy_samples = int(len(inference_energy_meter.samples))
+
+    predictions_by_example_id, no_answer_probability_by_example_id = postprocess_squad_v2_predictions(
+        raw_examples=raw_evaluation_split,
+        tokenized_features=tokenized_evaluation_features_for_postprocessing,
+        raw_predictions=(start_logits, end_logits),
+        tokenizer=tokenizer,
+        n_best_size=int(n_best_size),
+        maximum_answer_length=int(maximum_answer_length),
+    )
+
+    thresholded_predictions_by_example_id: Dict[str, str] = {}
+    for example_id, prediction_text in predictions_by_example_id.items():
+        no_answer_probability = float(no_answer_probability_by_example_id.get(example_id, 0.0))
+        thresholded_predictions_by_example_id[example_id] = (
+            ""
+            if no_answer_probability >= float(no_answer_probability_threshold)
+            else prediction_text
+        )
+
+    raw_metrics = compute_squad_v2_metrics(
+        predictions_by_example_id=predictions_by_example_id,
+        no_answer_probability_by_example_id=no_answer_probability_by_example_id,
+        raw_evaluation_dataset=raw_evaluation_split,
+    )
+    thresholded_metrics = compute_squad_v2_metrics(
+        predictions_by_example_id=thresholded_predictions_by_example_id,
+        no_answer_probability_by_example_id=no_answer_probability_by_example_id,
+        raw_evaluation_dataset=raw_evaluation_split,
+    )
+
+    number_of_raw_evaluation_examples = int(len(raw_evaluation_split))
+    number_of_feature_windows = int(len(tokenized_evaluation_features_for_model))
+    number_of_inference_tokens = int(
+        count_non_padding_tokens_in_feature_dataset(tokenized_evaluation_features_for_model)
+    )
+
+    average_latency_per_raw_example_milliseconds = (
+        (inference_runtime_seconds / number_of_raw_evaluation_examples) * 1000.0
+        if number_of_raw_evaluation_examples > 0
+        else None
+    )
+    average_latency_per_feature_window_milliseconds = (
+        (inference_runtime_seconds / number_of_feature_windows) * 1000.0
+        if number_of_feature_windows > 0
+        else None
+    )
+
+    thresholded_exact_match_correct_examples = int(
+        round((float(thresholded_metrics["exact"]) / 100.0) * number_of_raw_evaluation_examples)
+    )
+    thresholded_exact_match_correct_examples = max(1, thresholded_exact_match_correct_examples)
+
+    result: Dict[str, Any] = {
+        "maximum_sequence_length": int(maximum_sequence_length),
+        "effective_document_stride": int(effective_document_stride),
+        "number_of_raw_evaluation_examples": number_of_raw_evaluation_examples,
+        "number_of_feature_windows": number_of_feature_windows,
+        "number_of_inference_tokens": number_of_inference_tokens,
+        "inference_runtime_seconds": inference_runtime_seconds,
+        "average_latency_per_raw_example_milliseconds": average_latency_per_raw_example_milliseconds,
+        "average_latency_per_feature_window_milliseconds": average_latency_per_feature_window_milliseconds,
+        "inference_energy_joules": inference_energy_joules,
+        "number_of_energy_samples": number_of_energy_samples,
+        "joules_per_inference_example": (
+            inference_energy_joules / number_of_raw_evaluation_examples
+            if number_of_raw_evaluation_examples > 0
+            else None
+        ),
+        "joules_per_feature_window": (
+            inference_energy_joules / number_of_feature_windows
+            if number_of_feature_windows > 0
+            else None
+        ),
+        "joules_per_inference_token": (
+            inference_energy_joules / number_of_inference_tokens
+            if number_of_inference_tokens > 0
+            else None
+        ),
+        "joules_per_exact_match_correct_example": (
+            inference_energy_joules / thresholded_exact_match_correct_examples
+            if thresholded_exact_match_correct_examples > 0
+            else None
+        ),
+        "no_answer_probability_threshold": float(no_answer_probability_threshold),
+        "metrics_raw": raw_metrics,
+        "metrics_thresholded": thresholded_metrics,
+    }
+
+    if extra_result_fields is not None:
+        result.update(extra_result_fields)
+
+    write_json_file(result, run_directory / "result.json")
+
+    inference_energy_meter.save_report(
+        path=run_directory / "energy_infer.json",
+        additional_fields={
+            "phase": "inference",
+            "maximum_sequence_length": int(maximum_sequence_length),
+            "effective_document_stride": int(effective_document_stride),
+            "number_of_raw_evaluation_examples": number_of_raw_evaluation_examples,
+            "number_of_feature_windows": number_of_feature_windows,
+            "number_of_inference_tokens": number_of_inference_tokens,
+            "joules_per_inference_example": result["joules_per_inference_example"],
+            "joules_per_feature_window": result["joules_per_feature_window"],
+            "joules_per_inference_token": result["joules_per_inference_token"],
+            "number_of_energy_samples": number_of_energy_samples,
+            **(extra_result_fields or {}),
+        },
+    )
+
+    return result
+
+
 
 # Evaluate one checkpoint on SQuAD v2 at specific inference max sequence length
 def evaluate_checkpoint_on_squad_v2_at_sequence_length(
@@ -726,3 +1170,119 @@ def evaluate_checkpoint_on_squad_v2_at_precision(
     )
 
     return result
+
+# Evaluate one checkpoint on SQuAD v2 at specific dynamic token-pruning keep ratio
+def evaluate_checkpoint_on_squad_v2_with_token_pruning(
+    run_directory: Path,
+    log_file_path: Path,
+    model: PreTrainedModel,
+    tokenizer: PreTrainedTokenizerBase,
+    raw_evaluation_split,
+    maximum_sequence_length: int,
+    configured_document_stride: int,
+    pad_to_maximum_length: bool,
+    pad_to_multiple_of: Optional[int],
+    per_device_evaluation_batch_size: int,
+    dataloader_num_workers: int,
+    number_of_warmup_batches: int,
+    power_sampling_interval_seconds: float,
+    n_best_size: int,
+    maximum_answer_length: int,
+    no_answer_probability_threshold: float,
+    token_pruning_keep_ratio: float,
+) -> Dict[str, Any]:
+    normalized_keep_ratio = normalize_token_pruning_keep_ratio(token_pruning_keep_ratio)
+    keep_ratio_label = format_token_pruning_keep_ratio_label(normalized_keep_ratio)
+
+    effective_document_stride = clamp_document_stride_for_sequence_length(
+        configured_document_stride=configured_document_stride,
+        maximum_sequence_length=maximum_sequence_length,
+    )
+
+    append_line_to_text_file(
+        log_file_path,
+        f"[token_pruning_keep_ratio={keep_ratio_label}] effective_document_stride={effective_document_stride}",
+    )
+
+    tokenized_evaluation_features = raw_evaluation_split.map(
+        lambda examples: prepare_squad_v2_evaluation_features(
+            examples=examples,
+            tokenizer=tokenizer,
+            maximum_sequence_length=int(maximum_sequence_length),
+            document_stride=int(effective_document_stride),
+            pad_to_maximum_length=bool(pad_to_maximum_length),
+        ),
+        batched=True,
+        remove_columns=raw_evaluation_split.column_names,
+        desc=(
+            f"Tokenizing SQuAD v2 eval at max_sequence_length={maximum_sequence_length} "
+            f"for token_pruning_keep_ratio={keep_ratio_label}"
+        ),
+    )
+
+    append_line_to_text_file(
+        log_file_path,
+        f"[token_pruning_keep_ratio={keep_ratio_label}] applying dynamic token pruning",
+    )
+
+    pruned_tokenized_evaluation_features = apply_dynamic_token_pruning_to_tokenized_features(
+        tokenized_evaluation_features=tokenized_evaluation_features,
+        tokenizer=tokenizer,
+        model=model,
+        keep_ratio=normalized_keep_ratio,
+    )
+
+    number_of_context_tokens_before_pruning = int(
+        sum(
+            int(feature["number_of_context_tokens_before_pruning"])
+            for feature in pruned_tokenized_evaluation_features
+        )
+    )
+    number_of_context_tokens_after_pruning = int(
+        sum(
+            int(feature["number_of_context_tokens_after_pruning"])
+            for feature in pruned_tokenized_evaluation_features
+        )
+    )
+
+    realized_context_keep_ratio = (
+        float(number_of_context_tokens_after_pruning) / float(number_of_context_tokens_before_pruning)
+        if number_of_context_tokens_before_pruning > 0
+        else 1.0
+    )
+
+    pruned_tokenized_evaluation_features = pruned_tokenized_evaluation_features.remove_columns(
+        [
+            "token_pruning_keep_ratio_target",
+            "token_pruning_keep_ratio_realized",
+            "number_of_context_tokens_before_pruning",
+            "number_of_context_tokens_after_pruning",
+        ]
+    )
+
+    return evaluate_checkpoint_on_squad_v2_with_tokenized_features(
+        run_directory=run_directory,
+        log_file_path=log_file_path,
+        model=model,
+        tokenizer=tokenizer,
+        raw_evaluation_split=raw_evaluation_split,
+        tokenized_evaluation_features=pruned_tokenized_evaluation_features,
+        maximum_sequence_length=int(maximum_sequence_length),
+        effective_document_stride=int(effective_document_stride),
+        per_device_evaluation_batch_size=int(per_device_evaluation_batch_size),
+        dataloader_num_workers=int(dataloader_num_workers),
+        pad_to_multiple_of=pad_to_multiple_of,
+        number_of_warmup_batches=int(number_of_warmup_batches),
+        power_sampling_interval_seconds=float(power_sampling_interval_seconds),
+        n_best_size=int(n_best_size),
+        maximum_answer_length=int(maximum_answer_length),
+        no_answer_probability_threshold=float(no_answer_probability_threshold),
+        run_label=f"token_pruning_keep_ratio={keep_ratio_label}",
+        extra_result_fields={
+            "token_pruning_keep_ratio": normalized_keep_ratio,
+            "token_pruning_keep_ratio_label": keep_ratio_label,
+            "number_of_context_tokens_before_pruning": number_of_context_tokens_before_pruning,
+            "number_of_context_tokens_after_pruning": number_of_context_tokens_after_pruning,
+            "realized_context_keep_ratio": realized_context_keep_ratio,
+        },
+    )

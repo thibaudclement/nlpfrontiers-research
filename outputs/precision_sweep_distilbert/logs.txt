@@ -1,0 +1,27 @@
+[run] 2026-03-06_03-17-04_precision_sweep_distilbert
+[model_label] distilbert
+[checkpoint] runs/2026-03-05_10-20-45_baseline_squad_v2/huggingface_trainer/checkpoint-32940
+[precision=fp32] loading model
+[precision=fp32] starting evaluation
+[precision=fp32] effective_document_stride=128
+[precision=fp32] precision_supported=True
+[precision=fp32] running warmup batches=10
+[precision=fp32] starting inference energy meter
+[precision=fp32] stopped inference energy meter
+[precision=fp32] done f1=68.6311 exact=66.5375 joules_per_inference_token=0.00175982
+[precision=fp16] loading model
+[precision=fp16] starting evaluation
+[precision=fp16] effective_document_stride=128
+[precision=fp16] precision_supported=True
+[precision=fp16] running warmup batches=10
+[precision=fp16] starting inference energy meter
+[precision=fp16] stopped inference energy meter
+[precision=fp16] done f1=68.6412 exact=66.5375 joules_per_inference_token=0.00042343
+[precision=bf16] loading model
+[precision=bf16] starting evaluation
+[precision=bf16] effective_document_stride=128
+[precision=bf16] precision_supported=True
+[precision=bf16] running warmup batches=10
+[precision=bf16] starting inference energy meter
+[precision=bf16] stopped inference energy meter
+[precision=bf16] done f1=68.6478 exact=66.5038 joules_per_inference_token=0.00040325

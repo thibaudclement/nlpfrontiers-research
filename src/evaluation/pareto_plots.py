@@ -284,3 +284,47 @@ def plot_precision_sweep_comparison(
         y_axis_label=y_axis_label,
         plot_title=plot_title,
     )
+
+# Plot one token-pruning sweep curve for a single model checkpoint
+def plot_single_token_pruning_sweep(
+    rows: List[Dict[str, object]],
+    output_path: Path,
+    x_field_name: str,
+    y_field_name: str,
+    x_axis_label: str,
+    y_axis_label: str,
+    plot_title: str,
+) -> None:
+    plot_single_sweep(
+        rows=rows,
+        output_path=output_path,
+        x_field_name=x_field_name,
+        y_field_name=y_field_name,
+        label_field_name="token_pruning_keep_ratio_label",
+        x_axis_label=x_axis_label,
+        y_axis_label=y_axis_label,
+        plot_title=plot_title,
+    )
+
+# Plot overlay comparison across multiple token-pruning sweep CSV files
+def plot_token_pruning_sweep_comparison(
+    csv_paths: List[Path],
+    model_labels: List[str],
+    output_path: Path,
+    x_field_name: str,
+    y_field_name: str,
+    x_axis_label: str,
+    y_axis_label: str,
+    plot_title: str,
+) -> None:
+    plot_sweep_comparison(
+        csv_paths=csv_paths,
+        model_labels=model_labels,
+        output_path=output_path,
+        x_field_name=x_field_name,
+        y_field_name=y_field_name,
+        label_field_name="token_pruning_keep_ratio_label",
+        x_axis_label=x_axis_label,
+        y_axis_label=y_axis_label,
+        plot_title=plot_title,
+    )
