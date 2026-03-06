@@ -9,7 +9,9 @@ from src.evaluation.inference_benchmark import (
     evaluate_checkpoint_on_squad_v2_at_precision,
     evaluate_checkpoint_on_squad_v2_at_sequence_length,
     evaluate_checkpoint_on_squad_v2_with_token_pruning,
+    evaluate_checkpoint_on_squad_v2_with_token_pruning_from_tokenized_features,
     load_raw_squad_v2_evaluation_split,
+    tokenize_squad_v2_evaluation_features_once,
 )
 from src.evaluation.pareto_plots import (
     load_sequence_length_sweep_rows_from_csv,
@@ -433,7 +435,10 @@ def run_squad_v2_token_pruning_sweep(arguments: argparse.Namespace) -> None:
     # Load tokenizer and model once for the full sweep
     qa_artifacts = load_question_answering_model_and_tokenizer(
         model_name_or_path=arguments.checkpoint_path,
-        tokenizer_name_or_path=model_config.get("tokenizer_name_or_path", model_config["model_name_or_path"]),
+        tokenizer_name_or_path=model_config.get(
+            "tokenizer_name_or_path",
+            model_config["model_name_or_path"],
+        ),
     )
     tokenizer = qa_artifacts.tokenizer
     model = qa_artifacts.model
@@ -449,12 +454,23 @@ def run_squad_v2_token_pruning_sweep(arguments: argparse.Namespace) -> None:
         maximum_evaluation_examples=dataset_config.get("maximum_evaluation_examples"),
     )
 
-    sweep_rows: List[Dict[str, object]] = []
     maximum_sequence_length = int(inference_config["maximum_sequence_length"])
+
+    # Tokenize evaluation features once and reuse them across all keep-ratio values
+    tokenized_evaluation_features, effective_document_stride = tokenize_squad_v2_evaluation_features_once(
+        raw_evaluation_split=raw_evaluation_split,
+        tokenizer=tokenizer,
+        maximum_sequence_length=maximum_sequence_length,
+        configured_document_stride=int(inference_config["document_stride"]),
+        pad_to_maximum_length=bool(inference_config["pad_to_maximum_length"]),
+    )
+
+    sweep_rows: List[Dict[str, object]] = []
 
     # Evaluate checkpoint at each token-pruning keep ratio
     for token_pruning_keep_ratio in inference_config["token_pruning_keep_ratios"]:
-        keep_ratio_label = f"{float(token_pruning_keep_ratio):.2f}"
+        keep_ratio_value = float(token_pruning_keep_ratio)
+        keep_ratio_label = f"{keep_ratio_value:.2f}"
 
         sub_run_directory = ensure_directory_exists(
             run_directory / f"token_pruning_keep_ratio_{keep_ratio_label.replace('.', '_')}"
@@ -465,25 +481,53 @@ def run_squad_v2_token_pruning_sweep(arguments: argparse.Namespace) -> None:
             f"[token_pruning_keep_ratio={keep_ratio_label}] starting evaluation",
         )
 
-        evaluation_result = evaluate_checkpoint_on_squad_v2_with_token_pruning(
-            run_directory=sub_run_directory,
-            log_file_path=log_file_path,
-            model=model,
-            tokenizer=tokenizer,
-            raw_evaluation_split=raw_evaluation_split,
-            maximum_sequence_length=maximum_sequence_length,
-            configured_document_stride=int(inference_config["document_stride"]),
-            pad_to_maximum_length=bool(inference_config["pad_to_maximum_length"]),
-            pad_to_multiple_of=inference_config.get("pad_to_multiple_of"),
-            per_device_evaluation_batch_size=int(inference_config["per_device_evaluation_batch_size"]),
-            dataloader_num_workers=int(inference_config["dataloader_num_workers"]),
-            number_of_warmup_batches=int(inference_config["number_of_warmup_batches"]),
-            power_sampling_interval_seconds=float(inference_config["power_sampling_interval_seconds"]),
-            n_best_size=int(inference_config["n_best_size"]),
-            maximum_answer_length=int(inference_config["maximum_answer_length"]),
-            no_answer_probability_threshold=float(inference_config["no_answer_probability_threshold"]),
-            token_pruning_keep_ratio=float(token_pruning_keep_ratio),
-        )
+        # Use the same no-pruning evaluator as the static inference sweeps for the 1.00 control point
+        if abs(keep_ratio_value - 1.00) < 1e-12:
+            evaluation_result = evaluate_checkpoint_on_squad_v2_at_sequence_length(
+                run_directory=sub_run_directory,
+                log_file_path=log_file_path,
+                model=model,
+                tokenizer=tokenizer,
+                raw_evaluation_split=raw_evaluation_split,
+                maximum_sequence_length=maximum_sequence_length,
+                configured_document_stride=int(inference_config["document_stride"]),
+                pad_to_maximum_length=bool(inference_config["pad_to_maximum_length"]),
+                pad_to_multiple_of=inference_config.get("pad_to_multiple_of"),
+                per_device_evaluation_batch_size=int(inference_config["per_device_evaluation_batch_size"]),
+                dataloader_num_workers=int(inference_config["dataloader_num_workers"]),
+                number_of_warmup_batches=int(inference_config["number_of_warmup_batches"]),
+                power_sampling_interval_seconds=float(inference_config["power_sampling_interval_seconds"]),
+                n_best_size=int(inference_config["n_best_size"]),
+                maximum_answer_length=int(inference_config["maximum_answer_length"]),
+                no_answer_probability_threshold=float(inference_config["no_answer_probability_threshold"]),
+            )
+
+            evaluation_result["token_pruning_keep_ratio"] = 1.0
+            evaluation_result["token_pruning_keep_ratio_label"] = "1.00"
+            evaluation_result["realized_context_keep_ratio"] = 1.0
+            evaluation_result["number_of_context_tokens_before_pruning"] = None
+            evaluation_result["number_of_context_tokens_after_pruning"] = None
+
+        else:
+            evaluation_result = evaluate_checkpoint_on_squad_v2_with_token_pruning_from_tokenized_features(
+                run_directory=sub_run_directory,
+                log_file_path=log_file_path,
+                model=model,
+                tokenizer=tokenizer,
+                raw_evaluation_split=raw_evaluation_split,
+                tokenized_evaluation_features=tokenized_evaluation_features,
+                maximum_sequence_length=maximum_sequence_length,
+                effective_document_stride=int(effective_document_stride),
+                pad_to_multiple_of=inference_config.get("pad_to_multiple_of"),
+                per_device_evaluation_batch_size=int(inference_config["per_device_evaluation_batch_size"]),
+                dataloader_num_workers=int(inference_config["dataloader_num_workers"]),
+                number_of_warmup_batches=int(inference_config["number_of_warmup_batches"]),
+                power_sampling_interval_seconds=float(inference_config["power_sampling_interval_seconds"]),
+                n_best_size=int(inference_config["n_best_size"]),
+                maximum_answer_length=int(inference_config["maximum_answer_length"]),
+                no_answer_probability_threshold=float(inference_config["no_answer_probability_threshold"]),
+                token_pruning_keep_ratio=keep_ratio_value,
+            )
 
         metrics_thresholded = evaluation_result["metrics_thresholded"]
 
@@ -493,13 +537,9 @@ def run_squad_v2_token_pruning_sweep(arguments: argparse.Namespace) -> None:
                 "checkpoint_path": arguments.checkpoint_path,
                 "token_pruning_keep_ratio": float(evaluation_result["token_pruning_keep_ratio"]),
                 "token_pruning_keep_ratio_label": str(evaluation_result["token_pruning_keep_ratio_label"]),
-                "realized_context_keep_ratio": float(evaluation_result["realized_context_keep_ratio"]),
-                "number_of_context_tokens_before_pruning": int(
-                    evaluation_result["number_of_context_tokens_before_pruning"]
-                ),
-                "number_of_context_tokens_after_pruning": int(
-                    evaluation_result["number_of_context_tokens_after_pruning"]
-                ),
+                "realized_context_keep_ratio": evaluation_result["realized_context_keep_ratio"],
+                "number_of_context_tokens_before_pruning": evaluation_result["number_of_context_tokens_before_pruning"],
+                "number_of_context_tokens_after_pruning": evaluation_result["number_of_context_tokens_after_pruning"],
                 "maximum_sequence_length": int(evaluation_result["maximum_sequence_length"]),
                 "effective_document_stride": int(evaluation_result["effective_document_stride"]),
                 "exact": float(metrics_thresholded["exact"]),

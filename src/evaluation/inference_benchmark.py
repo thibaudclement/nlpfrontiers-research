@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional
 import numpy as np
 import torch
 from datasets import Dataset, load_dataset
+from copy import deepcopy
 from torch.utils.data import DataLoader
 from transformers import DataCollatorWithPadding, PreTrainedModel, PreTrainedTokenizerBase, TrainingArguments
 from src.data.squad_v2 import prepare_squad_v2_evaluation_features, postprocess_squad_v2_predictions
@@ -687,8 +688,6 @@ def evaluate_checkpoint_on_squad_v2_with_tokenized_features(
 
     return result
 
-
-
 # Evaluate one checkpoint on SQuAD v2 at specific inference max sequence length
 def evaluate_checkpoint_on_squad_v2_at_sequence_length(
     run_directory: Path,
@@ -908,6 +907,34 @@ def evaluate_checkpoint_on_squad_v2_at_sequence_length(
     )
 
     return result
+
+# Tokenize SQuAD v2 evaluation features once for reuse across token-pruning sweep values
+def tokenize_squad_v2_evaluation_features_once(
+    raw_evaluation_split,
+    tokenizer: PreTrainedTokenizerBase,
+    maximum_sequence_length: int,
+    configured_document_stride: int,
+    pad_to_maximum_length: bool,
+):
+    effective_document_stride = clamp_document_stride_for_sequence_length(
+        configured_document_stride=configured_document_stride,
+        maximum_sequence_length=maximum_sequence_length,
+    )
+
+    tokenized_evaluation_features = raw_evaluation_split.map(
+        lambda examples: prepare_squad_v2_evaluation_features(
+            examples=examples,
+            tokenizer=tokenizer,
+            maximum_sequence_length=int(maximum_sequence_length),
+            document_stride=int(effective_document_stride),
+            pad_to_maximum_length=bool(pad_to_maximum_length),
+        ),
+        batched=True,
+        remove_columns=raw_evaluation_split.column_names,
+        desc=f"Tokenizing SQuAD v2 eval at max_sequence_length={maximum_sequence_length}",
+    )
+
+    return tokenized_evaluation_features, int(effective_document_stride)
 
 # Evaluate one checkpoint on SQuAD v2 at specific inference precision
 def evaluate_checkpoint_on_squad_v2_at_precision(
@@ -1170,6 +1197,54 @@ def evaluate_checkpoint_on_squad_v2_at_precision(
     )
 
     return result
+
+# Evaluate one checkpoint on SQuAD v2 at specific dynamic token-pruning keep ratio
+def evaluate_checkpoint_on_squad_v2_with_token_pruning(
+    run_directory: Path,
+    log_file_path: Path,
+    model: PreTrainedModel,
+    tokenizer: PreTrainedTokenizerBase,
+    raw_evaluation_split,
+    maximum_sequence_length: int,
+    configured_document_stride: int,
+    pad_to_maximum_length: bool,
+    pad_to_multiple_of: Optional[int],
+    per_device_evaluation_batch_size: int,
+    dataloader_num_workers: int,
+    number_of_warmup_batches: int,
+    power_sampling_interval_seconds: float,
+    n_best_size: int,
+    maximum_answer_length: int,
+    no_answer_probability_threshold: float,
+    token_pruning_keep_ratio: float,
+) -> Dict[str, Any]:
+    tokenized_evaluation_features, effective_document_stride = tokenize_squad_v2_evaluation_features_once(
+        raw_evaluation_split=raw_evaluation_split,
+        tokenizer=tokenizer,
+        maximum_sequence_length=int(maximum_sequence_length),
+        configured_document_stride=int(configured_document_stride),
+        pad_to_maximum_length=bool(pad_to_maximum_length),
+    )
+
+    return evaluate_checkpoint_on_squad_v2_with_token_pruning_from_tokenized_features(
+        run_directory=run_directory,
+        log_file_path=log_file_path,
+        model=model,
+        tokenizer=tokenizer,
+        raw_evaluation_split=raw_evaluation_split,
+        tokenized_evaluation_features=tokenized_evaluation_features,
+        maximum_sequence_length=int(maximum_sequence_length),
+        effective_document_stride=int(effective_document_stride),
+        pad_to_multiple_of=pad_to_multiple_of,
+        per_device_evaluation_batch_size=int(per_device_evaluation_batch_size),
+        dataloader_num_workers=int(dataloader_num_workers),
+        number_of_warmup_batches=int(number_of_warmup_batches),
+        power_sampling_interval_seconds=float(power_sampling_interval_seconds),
+        n_best_size=int(n_best_size),
+        maximum_answer_length=int(maximum_answer_length),
+        no_answer_probability_threshold=float(no_answer_probability_threshold),
+        token_pruning_keep_ratio=float(token_pruning_keep_ratio),
+    )
 
 # Evaluate one checkpoint on SQuAD v2 at specific dynamic token-pruning keep ratio
 def evaluate_checkpoint_on_squad_v2_with_token_pruning(
