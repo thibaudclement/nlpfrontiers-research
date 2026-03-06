@@ -1247,7 +1247,7 @@ def evaluate_checkpoint_on_squad_v2_with_token_pruning(
     )
 
 # Evaluate one checkpoint on SQuAD v2 at specific dynamic token-pruning keep ratio
-def evaluate_checkpoint_on_squad_v2_with_token_pruning(
+def evaluate_checkpoint_on_squad_v2_with_token_pruning_from_tokenized_features(
     run_directory: Path,
     log_file_path: Path,
     model: PreTrainedModel,
