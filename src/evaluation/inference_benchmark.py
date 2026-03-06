@@ -376,7 +376,89 @@ def score_context_tokens_with_question_embedding_similarity(
 
     return scores_by_context_position
 
-# Prune context tokens
+# Expand kept context-token positions with a fixed local window radius
+def expand_context_positions_with_local_window(
+    selected_positions: set[int],
+    ordered_context_positions: list[int],
+    window_radius: int,
+) -> set[int]:
+    expanded_positions: set[int] = set()
+
+    if len(ordered_context_positions) == 0:
+        return expanded_positions
+
+    context_position_to_rank = {
+        context_position: rank
+        for rank, context_position in enumerate(ordered_context_positions)
+    }
+
+    for selected_position in selected_positions:
+        selected_rank = context_position_to_rank[selected_position]
+
+        start_rank = max(0, int(selected_rank) - int(window_radius))
+        end_rank = min(len(ordered_context_positions) - 1, int(selected_rank) + int(window_radius))
+
+        for expanded_rank in range(start_rank, end_rank + 1):
+            expanded_positions.add(ordered_context_positions[expanded_rank])
+
+    return expanded_positions
+
+# Select context-token positions (with span expansion)
+def select_context_positions_to_keep_with_local_window(
+    context_token_positions: list[int],
+    scores_by_context_position: Dict[int, float],
+    keep_ratio: float,
+    window_radius: int,
+) -> set[int]:
+    normalized_keep_ratio = normalize_token_pruning_keep_ratio(keep_ratio)
+
+    if len(context_token_positions) == 0:
+        return set()
+
+    target_number_of_context_tokens_to_keep = max(
+        1,
+        int(math.ceil(normalized_keep_ratio * len(context_token_positions))),
+    )
+
+    ranked_context_positions = sorted(
+        context_token_positions,
+        key=lambda position: (
+            scores_by_context_position.get(position, 0.0),
+            -position,
+        ),
+        reverse=True,
+    )
+
+    selected_anchor_positions: set[int] = set()
+    expanded_positions: set[int] = set()
+
+    for ranked_position in ranked_context_positions:
+        selected_anchor_positions.add(ranked_position)
+
+        expanded_positions = expand_context_positions_with_local_window(
+            selected_positions=selected_anchor_positions,
+            ordered_context_positions=context_token_positions,
+            window_radius=int(window_radius),
+        )
+
+        if len(expanded_positions) >= target_number_of_context_tokens_to_keep:
+            break
+
+    if len(expanded_positions) > target_number_of_context_tokens_to_keep:
+        expanded_positions = set(
+            sorted(
+                expanded_positions,
+                key=lambda position: (
+                    scores_by_context_position.get(position, 0.0),
+                    -position,
+                ),
+                reverse=True,
+            )[:target_number_of_context_tokens_to_keep]
+        )
+
+    return expanded_positions
+
+# Prune context tokens while preserving local span structure around selected anchors
 def prune_tokenized_feature_with_keep_ratio(
     feature: Dict[str, Any],
     tokenizer: PreTrainedTokenizerBase,
@@ -405,41 +487,29 @@ def prune_tokenized_feature_with_keep_ratio(
         pruned_feature["number_of_context_tokens_after_pruning"] = 0
         return pruned_feature
 
-    number_of_context_tokens_to_keep = max(
-        1,
-        int(math.ceil(normalized_keep_ratio * len(context_token_positions))),
-    )
-
     scores_by_context_position = score_context_tokens_with_question_embedding_similarity(
         feature=feature,
         tokenizer=tokenizer,
         embedding_weight_cpu=embedding_weight_cpu,
     )
 
-    context_positions_sorted_by_score = sorted(
-        context_token_positions,
-        key=lambda position: (
-            scores_by_context_position.get(position, 0.0),
-            -position,
-        ),
-        reverse=True,
-    )
-
-    kept_context_positions = set(
-        context_positions_sorted_by_score[:number_of_context_tokens_to_keep]
+    # Preserve a small local window around high-scoring context-token anchors
+    kept_context_positions = select_context_positions_to_keep_with_local_window(
+        context_token_positions=context_token_positions,
+        scores_by_context_position=scores_by_context_position,
+        keep_ratio=normalized_keep_ratio,
+        window_radius=2,
     )
 
     kept_positions: list[int] = []
+    special_token_ids = set(tokenizer.all_special_ids)
+
     for position, (token_id, attention_value, offset_value) in enumerate(
         zip(input_ids, attention_mask, offset_mapping)
     ):
         is_active_token = int(attention_value) == 1
-        is_context_token = offset_value is not None
         is_question_token = position in question_token_positions
-        is_special_token = (
-            is_active_token
-            and int(token_id) in set(tokenizer.all_special_ids)
-        )
+        is_special_token = is_active_token and int(token_id) in special_token_ids
 
         should_keep_position = (
             is_question_token
