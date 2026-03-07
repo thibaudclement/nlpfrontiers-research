@@ -83,7 +83,7 @@ class BertForQuestionAnsweringEarlyExit(BertPreTrainedModel):
             attention_mask,
             input_ids.shape,
         )
-        head_mask = self.bert.get_head_mask(None, self.config.num_hidden_layers)
+        head_mask = [None] * self.config.num_hidden_layers
 
         hidden_states = self.bert.embeddings(
             input_ids=input_ids,
