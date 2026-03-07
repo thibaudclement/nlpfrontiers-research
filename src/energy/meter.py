@@ -44,6 +44,16 @@ class EnergyMeter:
         self._start_wall_time_seconds = time.time()
         self._stop_wall_time_seconds = None
 
+        # Record one initial sample immediately at meter start
+        initial_power_watts = read_gpu_power_watts_from_nvidia_smi()
+        if initial_power_watts is not None:
+            self.samples.append(
+                PowerSample(
+                    timestamp_seconds_since_start=0.0,
+                    power_watts=float(initial_power_watts),
+                )
+            )
+
         # Run the sampling loop in a daemon thread
         def sampling_loop() -> None:
             assert self._start_wall_time_seconds is not None
@@ -52,7 +62,10 @@ class EnergyMeter:
                 if power_watts is not None:
                     elapsed = time.time() - self._start_wall_time_seconds
                     self.samples.append(
-                        PowerSample(timestamp_seconds_since_start=float(elapsed), power_watts=float(power_watts))
+                        PowerSample(
+                            timestamp_seconds_since_start=float(elapsed),
+                            power_watts=float(power_watts),
+                        )
                     )
                 time.sleep(self.sampling_interval_seconds)
 
@@ -66,6 +79,18 @@ class EnergyMeter:
             self._thread.join(timeout=5.0)
         self._thread = None
         self._stop_wall_time_seconds = time.time()
+
+        # Record one final sample immediately at meter stop.
+        if self._start_wall_time_seconds is not None:
+            final_power_watts = read_gpu_power_watts_from_nvidia_smi()
+            if final_power_watts is not None:
+                elapsed = self._stop_wall_time_seconds - self._start_wall_time_seconds
+                self.samples.append(
+                    PowerSample(
+                        timestamp_seconds_since_start=float(elapsed),
+                        power_watts=float(final_power_watts),
+                    )
+                )
 
     # Compute measured wall-clock duration in seconds
     def get_duration_seconds(self) -> float:
@@ -95,6 +120,7 @@ class EnergyMeter:
             "number_of_samples": len(self.samples),
             "energy_joules": self.get_energy_joules(),
             "samples": [asdict(sample) for sample in self.samples],
+            "has_enough_samples_for_integration": len(self.samples) >= 2,
         }
         if additional_fields:
             report.update(additional_fields)
