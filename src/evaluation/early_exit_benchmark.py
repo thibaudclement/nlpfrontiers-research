@@ -282,6 +282,8 @@ def train_early_exit_model_on_squad_v2(
         bf16=False,
         fp16=False,
         report_to=[],
+        remove_unused_columns=False,
+        label_names=["start_positions", "end_positions"],
     )
 
     trainer_init_signature = inspect.signature(CountingTrainer.__init__)
@@ -459,7 +461,7 @@ def evaluate_early_exit_threshold_on_squad_v2(
 
             for selected_exit_index in selected_exit_indices.cpu().tolist():
                 exited_layer_values.append(int(computed_exit_layers[int(selected_exit_index)]))
-                
+
     if device.type == "cuda":
         torch.cuda.synchronize()
 
