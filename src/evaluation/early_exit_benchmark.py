@@ -130,6 +130,23 @@ def run_dynamic_early_exit_warmup(
                 break
 
             batch_on_device = {name: tensor.to(device) for name, tensor in batch.items()}
+
+            # Fail fast if the measured batch is not actually on CUDA.
+            if batch_index == 0:
+                if any(tensor.device.type != "cuda" for tensor in batch_on_device.values()):
+                    raise RuntimeError(
+                        "The measured inference batch is not on CUDA. "
+                        "This sweep would produce invalid GPU energy measurements."
+                    )            
+
+            # Print the device placement for the first warmup batch.
+            if batch_index == 0:
+                print(
+                    "[warmup] batch tensor devices="
+                    + str({name: str(tensor.device) for name, tensor in batch_on_device.items()}),
+                    flush=True,
+                )
+
             _ = model.run_dynamic_early_exit(
                 input_ids=batch_on_device["input_ids"],
                 attention_mask=batch_on_device.get("attention_mask"),
@@ -301,8 +318,20 @@ def run_one_dynamic_early_exit_pass(
     model.eval()
 
     with torch.inference_mode():
-        for batch in evaluation_dataloader:
+        for batch_index, batch in enumerate(evaluation_dataloader):
             batch_on_device = {name: tensor.to(device) for name, tensor in batch.items()}
+
+            # Print device placement for the first measured batch.
+            if batch_index == 0:
+                print(
+                    "[inference] batch tensor devices="
+                    + str({name: str(tensor.device) for name, tensor in batch_on_device.items()}),
+                    flush=True,
+                )
+                print(
+                    f"[inference] model parameter device={next(model.parameters()).device}",
+                    flush=True,
+                )
 
             dynamic_output = model.run_dynamic_early_exit(
                 input_ids=batch_on_device["input_ids"],
@@ -317,6 +346,19 @@ def run_one_dynamic_early_exit_pass(
 
             exited_layer_values.append(int(dynamic_output.selected_exit_layer))
             executed_layer_count_values.append(int(dynamic_output.executed_layer_count))
+
+            # Print periodic progress so the sweep does not look stuck.
+            if batch_index > 0 and batch_index % 1000 == 0:
+                average_exit_layer_so_far = (
+                    float(sum(exited_layer_values)) / float(len(exited_layer_values))
+                    if len(exited_layer_values) > 0
+                    else 0.0
+                )
+                print(
+                    f"[inference] processed {batch_index} feature windows; "
+                    f"average_exit_layer_so_far={average_exit_layer_so_far:.4f}",
+                    flush=True,
+                )
 
     return {
         "selected_start_logits_batches": selected_start_logits_batches,

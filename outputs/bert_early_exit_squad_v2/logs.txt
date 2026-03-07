@@ -1,0 +1,7 @@
+[run] 2026-03-07_20-01-29_bert_early_exit_squad_v2
+[base_checkpoint] runs/2026-03-05_05-41-04_baseline_squad_v2/huggingface_trainer/checkpoint-32940
+[data] tokenizing early-exit training features
+[data] tokenizing early-exit evaluation features
+[energy][train] starting energy meter
+[train] calling trainer.train() for early-exit model
+[energy][train] stopped energy meter

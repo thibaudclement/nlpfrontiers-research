@@ -135,9 +135,21 @@ def run_squad_v2_bert_early_exit_threshold_sweep(arguments: argparse.Namespace) 
     )
     model = BertForQuestionAnsweringEarlyExit.from_pretrained(arguments.checkpoint_path)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Fail fast if CUDA is unavailable because GPU energy measurement would be invalid.
+    if not torch.cuda.is_available():
+        raise RuntimeError(
+            "CUDA is not available in this environment. "
+            "The early-exit sweep must run on GPU for energy measurement to be meaningful."
+        )
+
+    # Move the model to CUDA and print the resolved device for verification.
+    device = torch.device("cuda")
     model.to(device)
     model.eval()
+
+    print(f"[device] torch.cuda.is_available()={torch.cuda.is_available()}", flush=True)
+    print(f"[device] using device={device}", flush=True)
+    print(f"[device] model parameter device={next(model.parameters()).device}", flush=True)
 
     _, raw_evaluation_split = load_raw_squad_v2_splits(
         huggingface_dataset_id=dataset_config["huggingface_dataset_id"],

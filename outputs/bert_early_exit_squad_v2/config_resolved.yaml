@@ -1,0 +1,42 @@
+run_identifier: 2026-03-07_20-01-29_bert_early_exit_squad_v2
+dataset:
+  dataset_name: squad_v2
+  huggingface_dataset_id: squad_v2
+  train_split_name: train
+  evaluation_split_name: validation
+  maximum_train_examples: null
+  maximum_evaluation_examples: null
+model:
+  model_name_or_path: bert-base-uncased
+  tokenizer_name_or_path: bert-base-uncased
+training:
+  random_seed: 42
+  maximum_sequence_length: 384
+  document_stride: 128
+  pad_to_maximum_length: false
+  pad_to_multiple_of: 8
+  early_exit_layers:
+  - 4
+  - 8
+  - 12
+  early_exit_loss_weights:
+  - 1.0
+  - 1.0
+  - 1.0
+  learning_rate: 3.0e-05
+  weight_decay: 0.01
+  number_of_training_epochs: 1.0
+  per_device_training_batch_size: 8
+  per_device_evaluation_batch_size: 16
+  gradient_accumulation_steps: 1
+  warmup_steps: 500
+  logging_steps: 100
+  save_strategy: steps
+  save_steps: 1000
+  save_total_limit: 1
+  save_only_model: true
+  evaluation_strategy: steps
+  evaluation_steps: 1000
+  dataloader_num_workers: 2
+  power_sampling_interval_seconds: 0.2
+base_checkpoint_path: runs/2026-03-05_05-41-04_baseline_squad_v2/huggingface_trainer/checkpoint-32940

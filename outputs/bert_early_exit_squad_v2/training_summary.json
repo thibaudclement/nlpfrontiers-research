@@ -1,0 +1,9 @@
+{
+  "joules_per_training_example": 2.41525795326415,
+  "number_of_training_examples": 130319,
+  "number_of_training_samples_seen": 130319,
+  "train_runtime_seconds": 4415.5601,
+  "train_samples_per_second": 29.839,
+  "train_steps_per_second": 3.73,
+  "training_energy_joules": 314754.00121143076
+}

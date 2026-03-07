@@ -10,7 +10,7 @@ dataloader_num_workers: 2
 number_of_warmup_batches: 10
 
 # Use a short power sampling interval for inference measurement
-power_sampling_interval_seconds: 0.02
+power_sampling_interval_seconds: 0.2
 
 # Repeat the full evaluation pass until the measurement window is long enough
 minimum_measurement_seconds: 20.0

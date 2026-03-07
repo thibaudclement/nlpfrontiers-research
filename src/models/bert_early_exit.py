@@ -227,6 +227,18 @@ class BertForQuestionAnsweringEarlyExit(BertPreTrainedModel):
         if token_type_ids is None:
             token_type_ids = torch.zeros_like(input_ids)
 
+        # Print device information once to verify that dynamic inference runs on CUDA.
+        if not hasattr(self, "_has_printed_dynamic_device_info"):
+            print(
+                "[dynamic] tensor devices: "
+                f"input_ids={input_ids.device}, "
+                f"attention_mask={attention_mask.device}, "
+                f"token_type_ids={token_type_ids.device}, "
+                f"model_device={next(self.parameters()).device}",
+                flush=True,
+            )
+            self._has_printed_dynamic_device_info = True
+
         # Build same extended mask structure that BERT encoder layers expect
         extended_attention_mask = self.bert.get_extended_attention_mask(
             attention_mask,
