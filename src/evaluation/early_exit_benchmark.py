@@ -276,7 +276,7 @@ def train_early_exit_model_on_squad_v2(
         save_strategy=str(save_strategy),
         save_steps=int(save_steps),
         save_total_limit=int(save_total_limit),
-        evaluation_strategy=str(evaluation_strategy),
+        eval_strategy=str(evaluation_strategy),
         eval_steps=int(evaluation_steps),
         dataloader_num_workers=int(dataloader_num_workers),
         bf16=False,
