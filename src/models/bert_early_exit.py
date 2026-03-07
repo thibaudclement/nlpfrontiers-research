@@ -23,6 +23,8 @@ class BertForQuestionAnsweringEarlyExit(BertPreTrainedModel):
     def __init__(self, config: BertConfig):
         super().__init__(config)
 
+        # Force eager attention to keep manual layer-by-layer early-exit execution compatible
+        config._attn_implementation = "eager"
         self.bert = BertModel(config, add_pooling_layer=False)
 
         # Read early-exit metadata from config
