@@ -7,7 +7,7 @@ pad_to_multiple_of: 8
 per_device_evaluation_batch_size: 16
 dataloader_num_workers: 2
 number_of_warmup_batches: 10
-power_sampling_interval_seconds: 0.2
+power_sampling_interval_seconds: 0.02
 
 n_best_size: 20
 maximum_answer_length: 30

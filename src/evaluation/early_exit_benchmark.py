@@ -430,12 +430,18 @@ def evaluate_early_exit_threshold_on_squad_v2(
         for batch in evaluation_dataloader:
             batch_on_device = {name: tensor.to(device) for name, tensor in batch.items()}
 
-            model_output = model(**batch_on_device, return_dict=True)
+            model_output = model(
+                **batch_on_device,
+                return_dict=True,
+                early_exit_confidence_threshold=float(early_exit_confidence_threshold),
+            )
+
+            computed_exit_layers = model.early_exit_layers[: len(model_output.exit_start_logits)]
 
             selected_exit_indices = select_exit_index_per_example(
                 exit_start_logits=model_output.exit_start_logits,
                 exit_end_logits=model_output.exit_end_logits,
-                exit_layers=model.early_exit_layers,
+                exit_layers=computed_exit_layers,
                 confidence_threshold=float(early_exit_confidence_threshold),
             )
 
@@ -452,8 +458,8 @@ def evaluate_early_exit_threshold_on_squad_v2(
             selected_end_logits_batches.append(selected_end_logits.cpu().numpy())
 
             for selected_exit_index in selected_exit_indices.cpu().tolist():
-                exited_layer_values.append(int(model.early_exit_layers[int(selected_exit_index)]))
-
+                exited_layer_values.append(int(computed_exit_layers[int(selected_exit_index)]))
+                
     if device.type == "cuda":
         torch.cuda.synchronize()
 
