@@ -1,13 +1,20 @@
-# Inference configuration for dynamic early-exit threshold sweeps
+# Inference configuration for true dynamic early-exit threshold sweeps
 maximum_sequence_length: 384
 document_stride: 128
 pad_to_maximum_length: true
 pad_to_multiple_of: 8
 
-per_device_evaluation_batch_size: 16
+# Use batch size 1 so that executed depth matches selected depth exactly
+per_device_evaluation_batch_size: 1
 dataloader_num_workers: 2
 number_of_warmup_batches: 10
+
+# Use a short power sampling interval for inference measurement
 power_sampling_interval_seconds: 0.02
+
+# Repeat the full evaluation pass until the measurement window is long enough
+minimum_measurement_seconds: 20.0
+maximum_measurement_passes: 10
 
 n_best_size: 20
 maximum_answer_length: 30

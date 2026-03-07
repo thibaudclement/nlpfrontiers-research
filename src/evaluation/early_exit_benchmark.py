@@ -1,9 +1,8 @@
 from __future__ import annotations
 import inspect
-import math
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -17,12 +16,12 @@ from src.data.squad_v2 import (
 )
 from src.energy.meter import EnergyMeter
 from src.evaluation.squad_metrics import compute_squad_v2_metrics
-from src.models.counting_trainer import CountingTrainer
 from src.models.bert_early_exit import BertForQuestionAnsweringEarlyExit
+from src.models.counting_trainer import CountingTrainer
 from src.utils.io import append_line_to_text_file, write_json_file
 from src.utils.token_count import count_non_padding_tokens_in_feature_dataset
 
-# Load raw SQuAD v2 train/eval splits
+# Load raw SQuAD v2 train and evaluation splits
 def load_raw_squad_v2_splits(
     huggingface_dataset_id: str,
     train_split_name: str,
@@ -112,79 +111,13 @@ def build_dataloader(
         pin_memory=torch.cuda.is_available(),
     )
 
-# Compute normalized entropy-based confidence for one exit
-def compute_entropy_based_exit_confidence(
-    start_logits: torch.Tensor,
-    end_logits: torch.Tensor,
-) -> torch.Tensor:
-    start_probabilities = torch.softmax(start_logits, dim=-1)
-    end_probabilities = torch.softmax(end_logits, dim=-1)
-
-    start_log_probabilities = torch.log(start_probabilities.clamp_min(1e-12))
-    end_log_probabilities = torch.log(end_probabilities.clamp_min(1e-12))
-
-    start_entropy = -(start_probabilities * start_log_probabilities).sum(dim=-1)
-    end_entropy = -(end_probabilities * end_log_probabilities).sum(dim=-1)
-
-    sequence_length = start_logits.size(-1)
-    normalization_denominator = math.log(max(2, int(sequence_length)))
-
-    normalized_start_entropy = start_entropy / normalization_denominator
-    normalized_end_entropy = end_entropy / normalization_denominator
-
-    confidence = 1.0 - 0.5 * (normalized_start_entropy + normalized_end_entropy)
-    return confidence
-
-# Select earliest exit (where confidence exceeds the threshold)
-def select_exit_index_per_example(
-    exit_start_logits: Tuple[torch.Tensor, ...],
-    exit_end_logits: Tuple[torch.Tensor, ...],
-    exit_layers: List[int],
-    confidence_threshold: float,
-) -> torch.Tensor:
-    batch_size = exit_start_logits[0].size(0)
-    selected_exit_indices = torch.full(
-        (batch_size,),
-        fill_value=len(exit_layers) - 1,
-        dtype=torch.long,
-        device=exit_start_logits[0].device,
-    )
-
-    has_exited = torch.zeros(batch_size, dtype=torch.bool, device=exit_start_logits[0].device)
-
-    for exit_index, (start_logits, end_logits) in enumerate(zip(exit_start_logits, exit_end_logits)):
-        exit_confidence = compute_entropy_based_exit_confidence(
-            start_logits=start_logits,
-            end_logits=end_logits,
-        )
-
-        should_exit_here = (exit_confidence >= float(confidence_threshold)) & (~has_exited)
-
-        selected_exit_indices = torch.where(
-            should_exit_here,
-            torch.full_like(selected_exit_indices, fill_value=exit_index),
-            selected_exit_indices,
-        )
-        has_exited = has_exited | should_exit_here
-
-    return selected_exit_indices
-
-# Gather per-example logits from selected exits
-def gather_selected_exit_logits(
-    exit_logits: Tuple[torch.Tensor, ...],
-    selected_exit_indices: torch.Tensor,
-) -> torch.Tensor:
-    stacked_exit_logits = torch.stack(exit_logits, dim=0)
-    batch_size = selected_exit_indices.size(0)
-    batch_indices = torch.arange(batch_size, device=selected_exit_indices.device)
-    return stacked_exit_logits[selected_exit_indices, batch_indices, :]
-
-# Run short warmup pass for early-exit inference
-def run_early_exit_inference_warmup(
+# Run short warmup using true dynamic early-exit execution
+def run_dynamic_early_exit_warmup(
     model: BertForQuestionAnsweringEarlyExit,
     dataloader: DataLoader,
     device: torch.device,
     number_of_warmup_batches: int,
+    early_exit_confidence_threshold: float,
 ) -> None:
     if int(number_of_warmup_batches) <= 0:
         return
@@ -197,12 +130,17 @@ def run_early_exit_inference_warmup(
                 break
 
             batch_on_device = {name: tensor.to(device) for name, tensor in batch.items()}
-            _ = model(**batch_on_device, return_dict=True)
+            _ = model.run_dynamic_early_exit(
+                input_ids=batch_on_device["input_ids"],
+                attention_mask=batch_on_device.get("attention_mask"),
+                token_type_ids=batch_on_device.get("token_type_ids"),
+                early_exit_confidence_threshold=float(early_exit_confidence_threshold),
+            )
 
     if device.type == "cuda":
         torch.cuda.synchronize()
 
-# Train early-exit model from base checkpoint
+# Train early-exit model from base BERT checkpoint
 def train_early_exit_model_on_squad_v2(
     run_directory: Path,
     log_file_path: Path,
@@ -294,6 +232,7 @@ def train_early_exit_model_on_squad_v2(
         "eval_dataset": tokenized_evaluation_features_for_trainer,
         "data_collator": data_collator,
     }
+
     if "tokenizer" in trainer_init_signature.parameters:
         trainer_kwargs["tokenizer"] = tokenizer
 
@@ -345,7 +284,48 @@ def train_early_exit_model_on_squad_v2(
 
     return result
 
-# Evaluate confidence threshold for dynamic early-exit inference
+
+# Execute one full dynamic early-exit evaluation pass over all tokenized feature windows
+def run_one_dynamic_early_exit_pass(
+    model: BertForQuestionAnsweringEarlyExit,
+    evaluation_dataloader: DataLoader,
+    device: torch.device,
+    early_exit_confidence_threshold: float,
+    collect_predictions: bool,
+) -> Dict[str, Any]:
+    selected_start_logits_batches = []
+    selected_end_logits_batches = []
+    exited_layer_values: List[int] = []
+    executed_layer_count_values: List[int] = []
+
+    model.eval()
+
+    with torch.inference_mode():
+        for batch in evaluation_dataloader:
+            batch_on_device = {name: tensor.to(device) for name, tensor in batch.items()}
+
+            dynamic_output = model.run_dynamic_early_exit(
+                input_ids=batch_on_device["input_ids"],
+                attention_mask=batch_on_device.get("attention_mask"),
+                token_type_ids=batch_on_device.get("token_type_ids"),
+                early_exit_confidence_threshold=float(early_exit_confidence_threshold),
+            )
+
+            if bool(collect_predictions):
+                selected_start_logits_batches.append(dynamic_output.start_logits.cpu().numpy())
+                selected_end_logits_batches.append(dynamic_output.end_logits.cpu().numpy())
+
+            exited_layer_values.append(int(dynamic_output.selected_exit_layer))
+            executed_layer_count_values.append(int(dynamic_output.executed_layer_count))
+
+    return {
+        "selected_start_logits_batches": selected_start_logits_batches,
+        "selected_end_logits_batches": selected_end_logits_batches,
+        "exited_layer_values": exited_layer_values,
+        "executed_layer_count_values": executed_layer_count_values,
+    }
+
+# Evaluate one threshold using true dynamic early-exit inference with batch size 1
 def evaluate_early_exit_threshold_on_squad_v2(
     run_directory: Path,
     log_file_path: Path,
@@ -364,7 +344,15 @@ def evaluate_early_exit_threshold_on_squad_v2(
     maximum_answer_length: int,
     no_answer_probability_threshold: float,
     early_exit_confidence_threshold: float,
+    minimum_measurement_seconds: float,
+    maximum_measurement_passes: int,
 ) -> Dict[str, Any]:
+    if int(per_device_evaluation_batch_size) != 1:
+        raise ValueError(
+            "True dynamic early-exit measurement must use per_device_evaluation_batch_size=1 so that "
+            "executed depth matches selected depth exactly"
+        )
+
     device = next(model.parameters()).device
 
     effective_document_stride = clamp_document_stride_for_sequence_length(
@@ -374,7 +362,8 @@ def evaluate_early_exit_threshold_on_squad_v2(
 
     append_line_to_text_file(
         log_file_path,
-        f"[early_exit_threshold={early_exit_confidence_threshold:.2f}] effective_document_stride={effective_document_stride}",
+        f"[early_exit_threshold={early_exit_confidence_threshold:.2f}] "
+        f"effective_document_stride={effective_document_stride}",
     )
 
     tokenized_evaluation_features = tokenize_squad_v2_evaluation_features(
@@ -400,13 +389,15 @@ def evaluate_early_exit_threshold_on_squad_v2(
 
     append_line_to_text_file(
         log_file_path,
-        f"[early_exit_threshold={early_exit_confidence_threshold:.2f}] running warmup batches={number_of_warmup_batches}",
+        f"[early_exit_threshold={early_exit_confidence_threshold:.2f}] "
+        f"running warmup batches={number_of_warmup_batches}",
     )
-    run_early_exit_inference_warmup(
+    run_dynamic_early_exit_warmup(
         model=model,
         dataloader=evaluation_dataloader,
         device=device,
         number_of_warmup_batches=int(number_of_warmup_batches),
+        early_exit_confidence_threshold=float(early_exit_confidence_threshold),
     )
 
     append_line_to_text_file(
@@ -423,44 +414,46 @@ def evaluate_early_exit_threshold_on_squad_v2(
 
     inference_start_time_seconds = time.perf_counter()
 
+    measurement_pass_index = 0
     selected_start_logits_batches = []
     selected_end_logits_batches = []
-    exited_layer_values = []
+    all_exited_layer_values: List[int] = []
+    all_executed_layer_count_values: List[int] = []
 
-    model.eval()
-    with torch.inference_mode():
-        for batch in evaluation_dataloader:
-            batch_on_device = {name: tensor.to(device) for name, tensor in batch.items()}
+    # Repeat full evaluation passes until the measurement window is long enough
+    while True:
+        collect_predictions = measurement_pass_index == 0
 
-            model_output = model(
-                **batch_on_device,
-                return_dict=True,
-                early_exit_confidence_threshold=float(early_exit_confidence_threshold),
-            )
+        pass_result = run_one_dynamic_early_exit_pass(
+            model=model,
+            evaluation_dataloader=evaluation_dataloader,
+            device=device,
+            early_exit_confidence_threshold=float(early_exit_confidence_threshold),
+            collect_predictions=collect_predictions,
+        )
 
-            computed_exit_layers = model.early_exit_layers[: len(model_output.exit_start_logits)]
+        if bool(collect_predictions):
+            selected_start_logits_batches.extend(pass_result["selected_start_logits_batches"])
+            selected_end_logits_batches.extend(pass_result["selected_end_logits_batches"])
 
-            selected_exit_indices = select_exit_index_per_example(
-                exit_start_logits=model_output.exit_start_logits,
-                exit_end_logits=model_output.exit_end_logits,
-                exit_layers=computed_exit_layers,
-                confidence_threshold=float(early_exit_confidence_threshold),
-            )
+        all_exited_layer_values.extend(pass_result["exited_layer_values"])
+        all_executed_layer_count_values.extend(pass_result["executed_layer_count_values"])
 
-            selected_start_logits = gather_selected_exit_logits(
-                exit_logits=model_output.exit_start_logits,
-                selected_exit_indices=selected_exit_indices,
-            )
-            selected_end_logits = gather_selected_exit_logits(
-                exit_logits=model_output.exit_end_logits,
-                selected_exit_indices=selected_exit_indices,
-            )
+        measurement_pass_index += 1
 
-            selected_start_logits_batches.append(selected_start_logits.cpu().numpy())
-            selected_end_logits_batches.append(selected_end_logits.cpu().numpy())
+        if device.type == "cuda":
+            torch.cuda.synchronize()
 
-            for selected_exit_index in selected_exit_indices.cpu().tolist():
-                exited_layer_values.append(int(computed_exit_layers[int(selected_exit_index)]))
+        elapsed_measurement_seconds = time.perf_counter() - inference_start_time_seconds
+
+        if measurement_pass_index >= int(maximum_measurement_passes):
+            break
+
+        if (
+            measurement_pass_index >= 1
+            and elapsed_measurement_seconds >= float(minimum_measurement_seconds)
+        ):
+            break
 
     if device.type == "cuda":
         torch.cuda.synchronize()
@@ -485,6 +478,7 @@ def evaluate_early_exit_threshold_on_squad_v2(
         maximum_answer_length=int(maximum_answer_length),
     )
 
+    # Apply project-wide no-answer thresholding convention
     thresholded_predictions_by_example_id: Dict[str, str] = {}
     for example_id, prediction_text in predictions_by_example_id.items():
         no_answer_probability = float(no_answer_probability_by_example_id.get(example_id, 0.0))
@@ -515,19 +509,38 @@ def evaluate_early_exit_threshold_on_squad_v2(
         count_non_padding_tokens_in_feature_dataset(tokenized_evaluation_features_for_model)
     )
 
+    number_of_measurement_passes = int(measurement_pass_index)
+    measured_raw_examples = int(number_of_raw_evaluation_examples * number_of_measurement_passes)
+    measured_feature_windows = int(number_of_feature_windows * number_of_measurement_passes)
+    measured_inference_tokens = int(number_of_inference_tokens * number_of_measurement_passes)
+
     average_latency_per_raw_example_milliseconds = (
-        (inference_runtime_seconds / number_of_raw_evaluation_examples) * 1000.0
-        if number_of_raw_evaluation_examples > 0
+        (inference_runtime_seconds / measured_raw_examples) * 1000.0
+        if measured_raw_examples > 0
+        else None
+    )
+
+    average_latency_per_feature_window_milliseconds = (
+        (inference_runtime_seconds / measured_feature_windows) * 1000.0
+        if measured_feature_windows > 0
         else None
     )
 
     exit_layer_histogram: Dict[str, int] = {}
     for exit_layer in model.early_exit_layers:
-        exit_layer_histogram[str(int(exit_layer))] = int(sum(1 for value in exited_layer_values if value == int(exit_layer)))
+        exit_layer_histogram[str(int(exit_layer))] = int(
+            sum(1 for value in all_exited_layer_values if value == int(exit_layer))
+        )
 
     average_exited_layer = (
-        float(sum(exited_layer_values)) / float(len(exited_layer_values))
-        if len(exited_layer_values) > 0
+        float(sum(all_exited_layer_values)) / float(len(all_exited_layer_values))
+        if len(all_exited_layer_values) > 0
+        else float(model.early_exit_layers[-1])
+    )
+
+    average_executed_layer_count = (
+        float(sum(all_executed_layer_count_values)) / float(len(all_executed_layer_count_values))
+        if len(all_executed_layer_count_values) > 0
         else float(model.early_exit_layers[-1])
     )
 
@@ -538,23 +551,34 @@ def evaluate_early_exit_threshold_on_squad_v2(
         "number_of_raw_evaluation_examples": number_of_raw_evaluation_examples,
         "number_of_feature_windows": number_of_feature_windows,
         "number_of_inference_tokens": number_of_inference_tokens,
+        "number_of_measurement_passes": number_of_measurement_passes,
+        "measured_raw_examples": measured_raw_examples,
+        "measured_feature_windows": measured_feature_windows,
+        "measured_inference_tokens": measured_inference_tokens,
         "inference_runtime_seconds": inference_runtime_seconds,
         "average_latency_per_raw_example_milliseconds": average_latency_per_raw_example_milliseconds,
+        "average_latency_per_feature_window_milliseconds": average_latency_per_feature_window_milliseconds,
         "inference_energy_joules": inference_energy_joules,
         "number_of_energy_samples": number_of_energy_samples,
         "joules_per_inference_example": (
-            inference_energy_joules / number_of_raw_evaluation_examples
-            if number_of_raw_evaluation_examples > 0
+            inference_energy_joules / measured_raw_examples
+            if measured_raw_examples > 0
+            else None
+        ),
+        "joules_per_inference_feature_window": (
+            inference_energy_joules / measured_feature_windows
+            if measured_feature_windows > 0
             else None
         ),
         "joules_per_inference_token": (
-            inference_energy_joules / number_of_inference_tokens
-            if number_of_inference_tokens > 0
+            inference_energy_joules / measured_inference_tokens
+            if measured_inference_tokens > 0
             else None
         ),
         "metrics_raw": raw_metrics,
         "metrics_thresholded": thresholded_metrics,
         "average_exited_layer": average_exited_layer,
+        "average_executed_layer_count": average_executed_layer_count,
         "exit_layer_histogram": exit_layer_histogram,
     }
 
@@ -570,9 +594,15 @@ def evaluate_early_exit_threshold_on_squad_v2(
             "number_of_raw_evaluation_examples": number_of_raw_evaluation_examples,
             "number_of_feature_windows": number_of_feature_windows,
             "number_of_inference_tokens": number_of_inference_tokens,
+            "number_of_measurement_passes": number_of_measurement_passes,
+            "measured_raw_examples": measured_raw_examples,
+            "measured_feature_windows": measured_feature_windows,
+            "measured_inference_tokens": measured_inference_tokens,
             "joules_per_inference_example": result["joules_per_inference_example"],
+            "joules_per_inference_feature_window": result["joules_per_inference_feature_window"],
             "joules_per_inference_token": result["joules_per_inference_token"],
             "average_exited_layer": average_exited_layer,
+            "average_executed_layer_count": average_executed_layer_count,
         },
     )
 

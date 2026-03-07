@@ -106,7 +106,7 @@ def train_squad_v2_bert_early_exit(arguments: argparse.Namespace) -> None:
     print(f"Saved early-exit model to: {run_directory / 'best_model'}")
     print(f"Training energy (J): {training_result['training_energy_joules']:.4f}")
 
-# Run threshold sweep for dynamic early-exit inference
+# Run threshold sweep for true dynamic early-exit inference
 def run_squad_v2_bert_early_exit_threshold_sweep(arguments: argparse.Namespace) -> None:
     dataset_config = read_yaml_file(arguments.dataset_config_path)
     model_config = read_yaml_file(arguments.model_config_path)
@@ -177,79 +177,80 @@ def run_squad_v2_bert_early_exit_threshold_sweep(arguments: argparse.Namespace) 
             maximum_answer_length=int(inference_config["maximum_answer_length"]),
             no_answer_probability_threshold=float(inference_config["no_answer_probability_threshold"]),
             early_exit_confidence_threshold=float(early_exit_confidence_threshold),
+            minimum_measurement_seconds=float(inference_config["minimum_measurement_seconds"]),
+            maximum_measurement_passes=int(inference_config["maximum_measurement_passes"]),
         )
 
         metrics_thresholded = evaluation_result["metrics_thresholded"]
 
         sweep_rows.append(
             {
-                "early_exit_confidence_threshold": float(evaluation_result["early_exit_confidence_threshold"]),
+                "early_exit_confidence_threshold": float(
+                    evaluation_result["early_exit_confidence_threshold"]
+                ),
                 "f1": float(metrics_thresholded["f1"]),
                 "exact": float(metrics_thresholded["exact"]),
                 "inference_energy_joules": float(evaluation_result["inference_energy_joules"]),
                 "joules_per_inference_example": float(evaluation_result["joules_per_inference_example"]),
+                "joules_per_inference_feature_window": float(
+                    evaluation_result["joules_per_inference_feature_window"]
+                ),
                 "joules_per_inference_token": float(evaluation_result["joules_per_inference_token"]),
                 "average_latency_per_raw_example_milliseconds": float(
                     evaluation_result["average_latency_per_raw_example_milliseconds"]
                 ),
+                "average_latency_per_feature_window_milliseconds": float(
+                    evaluation_result["average_latency_per_feature_window_milliseconds"]
+                ),
                 "average_exited_layer": float(evaluation_result["average_exited_layer"]),
-                "number_of_raw_evaluation_examples": int(evaluation_result["number_of_raw_evaluation_examples"]),
+                "average_executed_layer_count": float(
+                    evaluation_result["average_executed_layer_count"]
+                ),
+                "number_of_raw_evaluation_examples": int(
+                    evaluation_result["number_of_raw_evaluation_examples"]
+                ),
                 "number_of_feature_windows": int(evaluation_result["number_of_feature_windows"]),
                 "number_of_inference_tokens": int(evaluation_result["number_of_inference_tokens"]),
+                "number_of_measurement_passes": int(evaluation_result["number_of_measurement_passes"]),
+                "number_of_energy_samples": int(evaluation_result["number_of_energy_samples"]),
             }
         )
 
         append_line_to_text_file(
             log_file_path,
             f"[early_exit_threshold={float(early_exit_confidence_threshold):.2f}] done "
-            f"f1={metrics_thresholded['f1']:.4f} "
-            f"exact={metrics_thresholded['exact']:.4f} "
-            f"average_exited_layer={evaluation_result['average_exited_layer']:.2f}",
+            f"f1={float(metrics_thresholded['f1']):.4f} "
+            f"exact={float(metrics_thresholded['exact']):.4f} "
+            f"energy_j={float(evaluation_result['inference_energy_joules']):.4f} "
+            f"avg_exit_layer={float(evaluation_result['average_exited_layer']):.4f}",
         )
 
-    pareto_csv_path = run_directory / "pareto.csv"
-    save_early_exit_rows_to_csv(rows=sweep_rows, csv_path=pareto_csv_path)
+    write_json_file(sweep_rows, run_directory / "sweep_rows.json")
+    save_early_exit_rows_to_csv(sweep_rows, run_directory / "sweep_rows.csv")
 
-    write_json_file(
-        {
-            "run_identifier": run_identifier,
-            "checkpoint_path": arguments.checkpoint_path,
-            "pareto_csv_path": str(pareto_csv_path),
-            "rows": sweep_rows,
-        },
-        run_directory / "summary.json",
-    )
-
+    # Plot F1 versus energy
     plot_single_early_exit_sweep(
         rows=sweep_rows,
-        output_path=run_directory / "energy_example_vs_f1.png",
-        x_field_name="joules_per_inference_example",
+        output_path=run_directory / "energy_vs_f1.png",
+        x_field_name="inference_energy_joules",
         y_field_name="f1",
-        x_axis_label="Energy (J / Example)",
+        x_axis_label="Inference Energy (J)",
         y_axis_label="F1",
-        plot_title="Early-Exit Threshold Sweep - BERT Base",
+        plot_title="Dynamic Early Exit Threshold Sweep: Energy vs F1",
     )
 
-    plot_single_early_exit_sweep(
-        rows=sweep_rows,
-        output_path=run_directory / "energy_token_vs_f1.png",
-        x_field_name="joules_per_inference_token",
-        y_field_name="f1",
-        x_axis_label="Energy (J / Token)",
-        y_axis_label="F1",
-        plot_title="Early-Exit Threshold Sweep - BERT Base",
-    )
-
+    # Plot latency versus F1
     plot_single_early_exit_sweep(
         rows=sweep_rows,
         output_path=run_directory / "latency_vs_f1.png",
         x_field_name="average_latency_per_raw_example_milliseconds",
         y_field_name="f1",
-        x_axis_label="Latency (ms / Example)",
+        x_axis_label="Average Latency per Raw Example (ms)",
         y_axis_label="F1",
-        plot_title="Early-Exit Threshold Sweep - BERT Base",
+        plot_title="Dynamic Early Exit Threshold Sweep: Latency vs F1",
     )
 
+    # Plot average exit depth versus F1
     plot_single_early_exit_sweep(
         rows=sweep_rows,
         output_path=run_directory / "average_exit_layer_vs_f1.png",
@@ -257,48 +258,43 @@ def run_squad_v2_bert_early_exit_threshold_sweep(arguments: argparse.Namespace) 
         y_field_name="f1",
         x_axis_label="Average Exited Layer",
         y_axis_label="F1",
-        plot_title="Early-Exit Threshold Sweep - BERT Base",
+        plot_title="Dynamic Early Exit Threshold Sweep: Average Exit Layer vs F1",
     )
 
     print(f"Run complete: {run_directory}")
-    print(f"Pareto table written to: {pareto_csv_path}")
+    print(f"Saved sweep rows to: {run_directory / 'sweep_rows.csv'}")
 
-# Build dedicated early-exit CLI
+# Register CLI commands
 def build_argument_parser() -> argparse.ArgumentParser:
-    argument_parser = argparse.ArgumentParser(
-        description="NLP Frontiers - Early-exit BERT QA CLI"
-    )
-    subparsers = argument_parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
 
-    train_parser = subparsers.add_parser(
-        "train_squad_v2_bert_early_exit",
-        help="Train a three-exit BERT QA model for SQuAD v2 starting from an existing BERT QA checkpoint.",
-    )
-    train_parser.add_argument("--dataset-config-path", required=True)
-    train_parser.add_argument("--model-config-path", required=True)
-    train_parser.add_argument("--training-config-path", required=True)
-    train_parser.add_argument("--base-checkpoint-path", required=True)
-    train_parser.add_argument("--run-identifier", default=None)
+    # Register training command
+    train_parser = subparsers.add_parser("train_squad_v2_bert_early_exit")
+    train_parser.add_argument("--dataset-config-path", type=str, required=True)
+    train_parser.add_argument("--model-config-path", type=str, required=True)
+    train_parser.add_argument("--training-config-path", type=str, required=True)
+    train_parser.add_argument("--base-checkpoint-path", type=str, required=True)
+    train_parser.add_argument("--run-identifier", type=str, default=None)
     train_parser.set_defaults(handler=train_squad_v2_bert_early_exit)
 
-    inference_parser = subparsers.add_parser(
-        "run_squad_v2_bert_early_exit_threshold_sweep",
-        help="Run an early-exit confidence-threshold sweep on a trained early-exit BERT QA checkpoint.",
-    )
-    inference_parser.add_argument("--dataset-config-path", required=True)
-    inference_parser.add_argument("--model-config-path", required=True)
-    inference_parser.add_argument("--inference-config-path", required=True)
-    inference_parser.add_argument("--checkpoint-path", required=True)
-    inference_parser.add_argument("--run-identifier", default=None)
-    inference_parser.set_defaults(handler=run_squad_v2_bert_early_exit_threshold_sweep)
+    # Register threshold sweep command
+    sweep_parser = subparsers.add_parser("run_squad_v2_bert_early_exit_threshold_sweep")
+    sweep_parser.add_argument("--dataset-config-path", type=str, required=True)
+    sweep_parser.add_argument("--model-config-path", type=str, required=True)
+    sweep_parser.add_argument("--inference-config-path", type=str, required=True)
+    sweep_parser.add_argument("--checkpoint-path", type=str, required=True)
+    sweep_parser.add_argument("--run-identifier", type=str, default=None)
+    sweep_parser.set_defaults(handler=run_squad_v2_bert_early_exit_threshold_sweep)
 
-    return argument_parser
+    return parser
 
-# Run dedicated early-exit CLI
+# Parse arguments and dispatch to selected handler
 def main() -> None:
-    argument_parser = build_argument_parser()
-    arguments = argument_parser.parse_args()
+    parser = build_argument_parser()
+    arguments = parser.parse_args()
     arguments.handler(arguments)
+
 
 if __name__ == "__main__":
     main()
