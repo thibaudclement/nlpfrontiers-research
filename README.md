@@ -22,16 +22,16 @@ The repository contains two versions of the experimental framework:
 
 The initial phase of the project focused on exploring inference-time efficiency techniques for the `bert-base-uncased` model. Experiments were conducted on several NLP benchmarks, including:
 
-- SST-2 (sentiment classification)
-- QQP (duplicate question detection)
-- SQuAD v1.1 (extractive question answering)
+- SST-2 (sentiment classification),
+- QQP (duplicate question detection),
+- SQuAD v1.1 (extractive question answering).
 
-This framework evaluated several inference-time reduction strategies:
+This framework evaluated the following inference-time reduction strategies:
 
-- sequence length truncation
-- encoder depth variation (retaining the first *k* layers)
-- reduced floating-point precision (e.g., FP16)
-- combinations of these techniques
+- Sequence length truncation,
+- Encoder depth variation (retaining the first *k* layers),
+- Reduced floating-point precision (e.g., FP16),
+- Combinations of these techniques.
 
 ### Final framework (root directory)
 
@@ -87,7 +87,7 @@ source ~/.bashrc
 
 ## Running experiments
 
-To train a model, use:
+To train a model:
 
 ```
 python -m src.<CLI_MODULE_NAME> \
@@ -96,7 +96,7 @@ python -m src.<CLI_MODULE_NAME> \
 --training-config-path configs/training/<CONFIG_FILE>
 ```
 
-To run a sweep, use:
+To run a sweep:
 
 ```
 python -m src.<CLI_MODULE_NAME> \
@@ -109,7 +109,7 @@ python -m src.<CLI_MODULE_NAME> \
 
 All experiment outputs are timestamped and stored in `runs/`.
 
-To generate a plot, use:
+To generate a plot:
 
 ```
 python -m src.evaluation.<MODULE_NAME> \
