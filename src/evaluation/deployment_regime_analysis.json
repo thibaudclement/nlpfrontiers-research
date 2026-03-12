@@ -1,0 +1,19 @@
+{
+    "bert_fp16":{
+    "joules_per_inference_example": 0.16841527441372658,
+    "training_energy": 626216.6362235189
+  },
+  "distilbert":{
+    "joules_per_inference_example": 0.3237167865184005,
+    "training_energy": 320696.5438412222
+  },
+  "bert_prune50_08_tp":{
+    "joules_per_inference_example": 0.35290851514953747,
+    "training_energy": 313589.7319416576 
+  },
+  "bert_edge_length_288":{
+    "joules_per_inference_example": 0.6313075824883497,
+    "training_energy": 522884.84578245005
+  }
+}
+

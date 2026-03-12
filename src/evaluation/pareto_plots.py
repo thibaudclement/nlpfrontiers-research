@@ -2,7 +2,6 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 from typing import Dict, List
-
 import matplotlib.pyplot as plt
 
 # Save sweep rows as a CSV table

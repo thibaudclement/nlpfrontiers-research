@@ -1,0 +1,42 @@
+{
+  "bert_baseline":{
+    "joules_per_inference_example": 0.6736354639458288,
+    "f1": 75.96958541768657
+  },
+    "distilbert":{
+    "joules_per_inference_example": 0.2088237555493274,
+    "f1": 68.63109438553123
+  },
+  "bert_prune50_bf16":{
+    "joules_per_inference_example": 0.16389192143195827,
+    "f1": 75.92441051506066
+  },
+  "bert_fp16":{
+    "joules_per_inference_example": 0.16841527441372658,
+    "f1": 75.96261923833717
+  },
+  "bert_ee_0.6":{
+    "joules_per_inference_example": 0.19460897510840702,
+    "f1": 61.135841773749526
+  },
+  "bert_ee_0.5":{
+    "joules_per_inference_example": 0.17731617928053287,
+    "f1": 59.71513456308307
+  },
+  "bert_freeze6_0.8_tp":{
+    "joules_per_inference_example": 0.35869644442002613,
+    "f1": 70.03955279828361
+  },
+  "distilbert_0.8_tp":{
+    "joules_per_inference_example": 0.17571074169858628,
+    "f1": 64.23125221236145
+  },
+  "bert_length_320":{
+    "joules_per_inference_example": 0.6159754844909867,
+    "f1": 75.54349703478091
+  },
+  "bert_edge_length_288":{
+    "joules_per_inference_example": 0.6313075824883497,
+    "f1": 69.1211112150929
+  }
+}

@@ -5,7 +5,7 @@ random_seed: 42
 maximum_sequence_length: 384
 document_stride: 128
 
-# Precision modes to evaluate.
+# Precision modes to evaluate
 precision_modes:
   - fp32
   - fp16

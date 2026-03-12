@@ -301,7 +301,6 @@ def train_early_exit_model_on_squad_v2(
 
     return result
 
-
 # Execute one full dynamic early-exit evaluation pass over all tokenized feature windows
 def run_one_dynamic_early_exit_pass(
     model: BertForQuestionAnsweringEarlyExit,
@@ -321,7 +320,7 @@ def run_one_dynamic_early_exit_pass(
         for batch_index, batch in enumerate(evaluation_dataloader):
             batch_on_device = {name: tensor.to(device) for name, tensor in batch.items()}
 
-            # Print device placement for the first measured batch.
+            # Print device placement for the first measured batch
             if batch_index == 0:
                 print(
                     "[inference] batch tensor devices="

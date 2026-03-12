@@ -1,0 +1,37 @@
+[run] 2026-03-10_00-58-01_token_pruning_sweep_bert_edge
+[model_label] bert_edge
+[checkpoint] runs/2026-03-05_12-20-49_baseline_squad_v2/huggingface_trainer/checkpoint-32940
+[token_pruning_keep_ratio=1.00] starting evaluation
+[sequence_length=384] effective_document_stride=128
+[sequence_length=384] running warmup batches=10
+[sequence_length=384] starting inference energy meter
+[sequence_length=384] stopped inference energy meter
+[token_pruning_keep_ratio=1.00] done f1=69.3546 exact=66.5291 joules_per_inference_token=0.00385563
+[token_pruning_keep_ratio=0.80] starting evaluation
+[token_pruning_keep_ratio=0.80] effective_document_stride=128
+[token_pruning_keep_ratio=0.80] applying dynamic token pruning
+[token_pruning_keep_ratio=0.80] running warmup batches=10
+[token_pruning_keep_ratio=0.80] starting inference energy meter
+[token_pruning_keep_ratio=0.80] stopped inference energy meter
+[token_pruning_keep_ratio=0.80] done f1=66.3298 exact=62.6548 joules_per_inference_token=0.00234589
+[token_pruning_keep_ratio=0.60] starting evaluation
+[token_pruning_keep_ratio=0.60] effective_document_stride=128
+[token_pruning_keep_ratio=0.60] applying dynamic token pruning
+[token_pruning_keep_ratio=0.60] running warmup batches=10
+[token_pruning_keep_ratio=0.60] starting inference energy meter
+[token_pruning_keep_ratio=0.60] stopped inference energy meter
+[token_pruning_keep_ratio=0.60] done f1=61.9523 exact=57.9719 joules_per_inference_token=0.00234683
+[token_pruning_keep_ratio=0.40] starting evaluation
+[token_pruning_keep_ratio=0.40] effective_document_stride=128
+[token_pruning_keep_ratio=0.40] applying dynamic token pruning
+[token_pruning_keep_ratio=0.40] running warmup batches=10
+[token_pruning_keep_ratio=0.40] starting inference energy meter
+[token_pruning_keep_ratio=0.40] stopped inference energy meter
+[token_pruning_keep_ratio=0.40] done f1=56.0725 exact=52.8342 joules_per_inference_token=0.00243973
+[token_pruning_keep_ratio=0.30] starting evaluation
+[token_pruning_keep_ratio=0.30] effective_document_stride=128
+[token_pruning_keep_ratio=0.30] applying dynamic token pruning
+[token_pruning_keep_ratio=0.30] running warmup batches=10
+[token_pruning_keep_ratio=0.30] starting inference energy meter
+[token_pruning_keep_ratio=0.30] stopped inference energy meter
+[token_pruning_keep_ratio=0.30] done f1=53.8521 exact=51.1834 joules_per_inference_token=0.00246471

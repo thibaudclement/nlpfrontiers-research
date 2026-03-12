@@ -1,7 +1,7 @@
 # Inference-time max sequence length sweep configuration for SQuAD v2
 random_seed: 42
 
-# Sequence lengths to evaluate at inference time.
+# Sequence lengths to evaluate at inference time
 sequence_lengths:
   - 384
   - 320

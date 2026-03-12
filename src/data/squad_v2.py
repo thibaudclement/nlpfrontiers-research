@@ -104,7 +104,6 @@ def prepare_squad_v2_training_features(
     tokenized_features["end_positions"] = end_positions
     return tokenized_features
 
-
 # Convert raw examples into tokenized evaluation features for extractive QA
 def prepare_squad_v2_evaluation_features(
     examples: Dict[str, List[Any]],

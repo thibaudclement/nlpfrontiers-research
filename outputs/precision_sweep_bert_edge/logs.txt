@@ -1,0 +1,27 @@
+[run] 2026-03-10_00-50-03_precision_sweep_bert_edge
+[model_label] bert_edge
+[checkpoint] runs/2026-03-05_12-20-49_baseline_squad_v2/huggingface_trainer/checkpoint-32940
+[precision=fp32] loading model
+[precision=fp32] starting evaluation
+[precision=fp32] effective_document_stride=128
+[precision=fp32] precision_supported=True
+[precision=fp32] running warmup batches=10
+[precision=fp32] starting inference energy meter
+[precision=fp32] stopped inference energy meter
+[precision=fp32] done f1=69.3546 exact=66.5291 joules_per_inference_token=0.00382828
+[precision=fp16] loading model
+[precision=fp16] starting evaluation
+[precision=fp16] effective_document_stride=128
+[precision=fp16] precision_supported=True
+[precision=fp16] running warmup batches=10
+[precision=fp16] starting inference energy meter
+[precision=fp16] stopped inference energy meter
+[precision=fp16] done f1=69.3694 exact=66.5544 joules_per_inference_token=0.00092970
+[precision=bf16] loading model
+[precision=bf16] starting evaluation
+[precision=bf16] effective_document_stride=128
+[precision=bf16] precision_supported=True
+[precision=bf16] running warmup batches=10
+[precision=bf16] starting inference energy meter
+[precision=bf16] stopped inference energy meter
+[precision=bf16] done f1=69.3744 exact=66.5459 joules_per_inference_token=0.00089451

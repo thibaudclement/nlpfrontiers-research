@@ -1,0 +1,37 @@
+{
+  "average_executed_layer_count": 4.063293225646943,
+  "average_exited_layer": 4.063293225646943,
+  "duration_seconds": 63.23526930809021,
+  "early_exit_confidence_threshold": 0.5,
+  "effective_document_stride": 128,
+  "energy_joules": 2105.274996597767,
+  "has_enough_samples_for_integration": true,
+  "joules_per_inference_example": 0.17731617928053287,
+  "joules_per_inference_feature_window": 0.17350214245902149,
+  "joules_per_inference_token": 0.0009639440429619147,
+  "maximum_sequence_length": 384,
+  "measured_feature_windows": 12134,
+  "measured_inference_tokens": 2184022,
+  "measured_raw_examples": 11873,
+  "number_of_feature_windows": 12134,
+  "number_of_inference_tokens": 2184022,
+  "number_of_measurement_passes": 1,
+  "number_of_raw_evaluation_examples": 11873,
+  "number_of_samples": 3,
+  "phase": "inference",
+  "samples": [
+    {
+      "power_watts": 33.28,
+      "timestamp_seconds_since_start": 0.0
+    },
+    {
+      "power_watts": 33.22,
+      "timestamp_seconds_since_start": 63.03502535820007
+    },
+    {
+      "power_watts": 60.27,
+      "timestamp_seconds_since_start": 63.23526930809021
+    }
+  ],
+  "sampling_interval_seconds": 0.2
+}

@@ -307,6 +307,5 @@ def main() -> None:
     arguments = parser.parse_args()
     arguments.handler(arguments)
 
-
 if __name__ == "__main__":
     main()

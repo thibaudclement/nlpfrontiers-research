@@ -1,0 +1,33 @@
+run_identifier: 2026-03-07_22-16-20_bert_early_exit_threshold_sweep
+dataset:
+  dataset_name: squad_v2
+  huggingface_dataset_id: squad_v2
+  train_split_name: train
+  evaluation_split_name: validation
+  maximum_train_examples: null
+  maximum_evaluation_examples: null
+model:
+  model_name_or_path: bert-base-uncased
+  tokenizer_name_or_path: bert-base-uncased
+inference:
+  maximum_sequence_length: 384
+  document_stride: 128
+  pad_to_maximum_length: true
+  pad_to_multiple_of: 8
+  per_device_evaluation_batch_size: 1
+  dataloader_num_workers: 2
+  number_of_warmup_batches: 10
+  power_sampling_interval_seconds: 0.2
+  minimum_measurement_seconds: 20.0
+  maximum_measurement_passes: 10
+  n_best_size: 20
+  maximum_answer_length: 30
+  no_answer_probability_threshold: 0.06458
+  early_exit_confidence_thresholds:
+  - 1.01
+  - 0.9
+  - 0.8
+  - 0.7
+  - 0.6
+  - 0.5
+checkpoint_path: runs/2026-03-07_20-01-29_bert_early_exit_squad_v2/best_model

@@ -1,0 +1,38 @@
+[run] 2026-03-07_22-16-20_bert_early_exit_threshold_sweep
+[checkpoint] runs/2026-03-07_20-01-29_bert_early_exit_squad_v2/best_model
+[early_exit_threshold=1.01] starting evaluation
+[early_exit_threshold=1.01] effective_document_stride=128
+[early_exit_threshold=1.01] running warmup batches=10
+[early_exit_threshold=1.01] starting inference energy meter
+[early_exit_threshold=1.01] stopped inference energy meter
+[early_exit_threshold=1.01] done f1=76.6423 exact=73.3934 energy_j=10289.0410 avg_exit_layer=12.0000
+[early_exit_threshold=0.90] starting evaluation
+[early_exit_threshold=0.90] effective_document_stride=128
+[early_exit_threshold=0.90] running warmup batches=10
+[early_exit_threshold=0.90] starting inference energy meter
+[early_exit_threshold=0.90] stopped inference energy meter
+[early_exit_threshold=0.90] done f1=75.2860 exact=72.1048 energy_j=8116.6705 avg_exit_layer=9.0476
+[early_exit_threshold=0.80] starting evaluation
+[early_exit_threshold=0.80] effective_document_stride=128
+[early_exit_threshold=0.80] running warmup batches=10
+[early_exit_threshold=0.80] starting inference energy meter
+[early_exit_threshold=0.80] stopped inference energy meter
+[early_exit_threshold=0.80] done f1=70.4133 exact=67.3545 energy_j=6572.0651 avg_exit_layer=6.8802
+[early_exit_threshold=0.70] starting evaluation
+[early_exit_threshold=0.70] effective_document_stride=128
+[early_exit_threshold=0.70] running warmup batches=10
+[early_exit_threshold=0.70] starting inference energy meter
+[early_exit_threshold=0.70] stopped inference energy meter
+[early_exit_threshold=0.70] done f1=64.6380 exact=61.7872 energy_j=5366.4717 avg_exit_layer=5.2919
+[early_exit_threshold=0.60] starting evaluation
+[early_exit_threshold=0.60] effective_document_stride=128
+[early_exit_threshold=0.60] running warmup batches=10
+[early_exit_threshold=0.60] starting inference energy meter
+[early_exit_threshold=0.60] stopped inference energy meter
+[early_exit_threshold=0.60] done f1=61.1358 exact=58.3593 energy_j=2310.5924 avg_exit_layer=4.3735
+[early_exit_threshold=0.50] starting evaluation
+[early_exit_threshold=0.50] effective_document_stride=128
+[early_exit_threshold=0.50] running warmup batches=10
+[early_exit_threshold=0.50] starting inference energy meter
+[early_exit_threshold=0.50] stopped inference energy meter
+[early_exit_threshold=0.50] done f1=59.7151 exact=57.1970 energy_j=2105.2750 avg_exit_layer=4.0633
