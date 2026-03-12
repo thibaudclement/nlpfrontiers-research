@@ -365,7 +365,7 @@ def plot_energy_latency_precision(pareto_csv_path: Path, run_directory: Path) ->
 
     # Set axes bounds for visual clarity
     plt.xlim(*_auto_limits(x))
-    plt.ylim(*_auto_limits(y))
+    plt.ylim(0.90, 0.92)
 
     plt.tight_layout()
     output_path = run_directory / "energy_latency_precision.png"
