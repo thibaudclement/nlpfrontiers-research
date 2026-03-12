@@ -18,7 +18,7 @@ Finally, the most energy-efficient strategy depends on the expected workload: ar
 
 The repository contains two versions of the experimental framework:
 
-### V1 (`/v1`) — Initial framework
+### Initial framework (`/v1`)
 
 The initial phase of the project focused on exploring inference-time efficiency techniques for the `bert-base-uncased` model. Experiments were conducted on several NLP benchmarks, including:
 
